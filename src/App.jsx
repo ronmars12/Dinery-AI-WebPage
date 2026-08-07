@@ -11,7 +11,7 @@ import FounderStory from './components/FounderStory';
 import Footer from './components/Footer';
 import RestaurantOnboarding from './components/Restaurant';
 import DineryCalculators from './components/DineryCalculators';
-
+import Price from './components/Price';
 // Create Language Context inline
 const LanguageContext = createContext();
 
@@ -74,6 +74,7 @@ const App = () => {
             <Route path="/founders-story" element={<FounderStory />} />
             <Route path="/news" element={<News />} />
             <Route path="/calculators" element={<DineryCalculators />} />
+            <Route path="/price" element={<Price />} />
           </Routes>
           <Footer />
         </div>

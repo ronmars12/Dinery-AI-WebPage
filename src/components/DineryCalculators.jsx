@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../App';
+
+const RESTAURANT_IMAGE =
+  'https://images.unsplash.com/photo-1770816307690-41da2ad9f384?auto=format&fit=crop&w=1600&q=82';
 
 const DineryCalculators = () => {
   const [activeTab, setActiveTab] = useState('customer');
   const { currentLanguage } = useLanguage();
+  const [heroVisible, setHeroVisible] = useState(false);
   
   // Customer Calculator State
   const [monthlyVisits, setMonthlyVisits] = useState('');
@@ -14,6 +18,44 @@ const DineryCalculators = () => {
   const [avgGuests, setAvgGuests] = useState('');
   const [weeklyReservations, setWeeklyReservations] = useState('');
   const [avgDiscount, setAvgDiscount] = useState('');
+
+  useEffect(() => {
+    const reduceMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
+
+    if (reduceMotion) {
+      setHeroVisible(true);
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => setHeroVisible(true), 70);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const elements = document.querySelectorAll('.calculator-reveal');
+
+    if (!('IntersectionObserver' in window)) {
+      elements.forEach((element) => element.classList.add('is-visible'));
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
+    );
+
+    elements.forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
+  }, [currentLanguage]);
 
   // Translations
 const translations = {
@@ -282,28 +324,53 @@ const translations = {
     </svg>
   );
 
+  const heroTransition =
+    'transition-[opacity,transform] duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none';
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen overflow-hidden bg-[#0b1018] text-white">
       {/* Main Content */}
-      <div className="w-full max-w-6xl mx-auto px-4 py-12 pb-24">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
-            {t.mainTitle}
-          </h2>
-          <p className="text-lg text-gray-600">
-            {t.mainSubtitle}
-          </p>
+      <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:py-10">
+        <div className="relative mb-6 overflow-hidden rounded-[28px] border border-white/10 px-6 py-8 text-left sm:px-9">
+          <img src={RESTAURANT_IMAGE} alt="Modern restaurant interior" className="absolute inset-0 h-full w-full object-cover opacity-35" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0b1018] via-[#0b1018]/90 to-[#0b1018]/35" />
+          <div className="relative max-w-2xl">
+            <span 
+              className={`mb-3 inline-flex rounded-full border border-orange-400/20 bg-orange-400/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-orange-300 ${heroTransition} ${
+                heroVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+              }`}
+              style={{ transitionDelay: heroVisible ? '70ms' : '0ms' }}
+            >
+              Dinery insights
+            </span>
+            <h2 
+              className={`mb-2 text-3xl font-semibold tracking-[-0.035em] text-white md:text-5xl ${heroTransition} ${
+                heroVisible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
+              }`}
+              style={{ transitionDelay: heroVisible ? '150ms' : '0ms' }}
+            >
+              {t.mainTitle}
+            </h2>
+            <p 
+              className={`max-w-xl text-sm leading-6 text-slate-300 sm:text-base ${heroTransition} ${
+                heroVisible ? 'translate-y-0 opacity-100' : 'translate-y-5 opacity-0'
+              }`}
+              style={{ transitionDelay: heroVisible ? '270ms' : '0ms' }}
+            >
+              {t.mainSubtitle}
+            </p>
+          </div>
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex justify-center mb-6">
-          <div className="inline-flex rounded-lg border border-orange-300 bg-orange-50 p-1">
+        <div className="calculator-reveal mb-5 flex justify-center">
+          <div className="inline-flex w-full max-w-lg rounded-2xl border border-white/10 bg-white/[0.05] p-1.5">
             <button
               onClick={() => setActiveTab('customer')}
-              className={`px-6 py-3 rounded-lg font-medium transition-all ${
+              className={`flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
                 activeTab === 'customer'
-                  ? 'bg-orange-500 text-white shadow-lg'
-                  : 'text-gray-700 hover:text-orange-600'
+                  ? 'bg-orange-500 text-white shadow-lg shadow-orange-950/30'
+                  : 'text-slate-400 hover:bg-white/[0.04] hover:text-white'
               }`}
             >
               <div className="flex items-center gap-2">
@@ -313,10 +380,10 @@ const translations = {
             </button>
             <button
               onClick={() => setActiveTab('restaurant')}
-              className={`px-6 py-3 rounded-lg font-medium transition-all ${
+              className={`flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
                 activeTab === 'restaurant'
-                  ? 'bg-orange-500 text-white shadow-lg'
-                  : 'text-gray-700 hover:text-orange-600'
+                  ? 'bg-orange-500 text-white shadow-lg shadow-orange-950/30'
+                  : 'text-slate-400 hover:bg-white/[0.04] hover:text-white'
               }`}
             >
               <div className="flex items-center gap-2">
@@ -329,19 +396,19 @@ const translations = {
 
         {/* Customer Calculator */}
         {activeTab === 'customer' && (
-          <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-orange-100 p-3 rounded-lg text-orange-600">
+          <div className="calculator-reveal rounded-[28px] border border-white/[0.09] bg-white/[0.045] p-5 shadow-2xl sm:p-7">
+            <div className="mb-5 flex items-center gap-3">
+              <div className="rounded-xl bg-orange-500/15 p-2.5 text-orange-400">
                 <Calculator />
               </div>
-              <h3 className="text-xl md:text-2xl font-bold text-gray-900">
+              <h3 className="text-xl font-semibold text-white md:text-2xl">
                 {t.customerTitle}
               </h3>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6 mb-8">
+            <div className="mb-5 grid gap-4 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="mb-2 block text-xs font-semibold text-slate-300">
                   {t.monthlyVisitsLabel}
                 </label>
                 <input
@@ -349,13 +416,13 @@ const translations = {
                   value={monthlyVisits}
                   onChange={(e) => setMonthlyVisits(e.target.value)}
                   placeholder={t.placeholder1}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:ring focus:ring-orange-200 transition-all text-lg"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-base text-white outline-none transition focus:border-orange-400/70 focus:ring-4 focus:ring-orange-500/10"
                   min="0"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="mb-2 block text-xs font-semibold text-slate-300">
                   {t.avgBillLabel} ({t.currency})
                 </label>
                 <input
@@ -363,7 +430,7 @@ const translations = {
                   value={avgBill}
                   onChange={(e) => setAvgBill(e.target.value)}
                   placeholder={t.placeholder2}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:ring focus:ring-orange-200 transition-all text-lg"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-base text-white outline-none transition focus:border-orange-400/70 focus:ring-4 focus:ring-orange-500/10"
                   min="0"
                 />
               </div>
@@ -371,61 +438,61 @@ const translations = {
 
             {yearlySpend > 0 && (
               <>
-                <div className="bg-orange-50 rounded-xl p-5 mb-6 border-2 border-orange-200">
-                  <p className="text-sm text-gray-600 mb-1">{t.currentSpendingLabel}</p>
-                  <p className="text-3xl font-bold text-orange-600">
+                <div className="mb-5 rounded-2xl border border-orange-400/20 bg-orange-500/10 p-4">
+                  <p className="mb-1 text-xs text-orange-200/70">{t.currentSpendingLabel}</p>
+                  <p className="text-3xl font-semibold text-orange-400">
                     {formatCurrency(yearlySpend)}
                   </p>
                 </div>
 
-                <h4 className="text-lg md:text-xl font-bold text-gray-900 mb-4">
+                <h4 className="mb-3 text-lg font-semibold text-white md:text-xl">
                   {t.potentialSavingsTitle}
                 </h4>
 
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-5 border-2 border-amber-300">
+                <div className="grid gap-3 md:grid-cols-3">
+                  <div className="rounded-2xl border border-amber-400/20 bg-amber-400/[0.08] p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <h5 className="text-base font-bold text-amber-900">Bronze</h5>
-                      <span className="bg-amber-200 text-amber-800 text-xs font-semibold px-2 py-1 rounded-full">
+                      <h5 className="text-base font-bold text-amber-200">Bronze</h5>
+                      <span className="rounded-full bg-amber-400/15 px-2 py-1 text-xs font-semibold text-amber-300">
                         25% OFF
                       </span>
                     </div>
-                    <p className="text-2xl md:text-3xl font-bold text-amber-900 mb-1">
+                    <p className="mb-1 text-2xl font-bold text-white md:text-3xl">
                       {formatCurrency(customerSavings.bronze)}
                     </p>
-                    <p className="text-xs text-amber-700">{t.savedPerYear}</p>
+                    <p className="text-xs text-amber-200/60">{t.savedPerYear}</p>
                   </div>
 
-                  <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl p-5 border-2 border-gray-300 md:transform md:scale-105 shadow-lg">
+                  <div className="rounded-2xl border border-slate-300/20 bg-white/[0.08] p-4 shadow-lg">
                     <div className="flex items-center justify-between mb-2">
-                      <h5 className="text-base font-bold text-gray-900">Silver</h5>
-                      <span className="bg-gray-300 text-gray-800 text-xs font-semibold px-2 py-1 rounded-full">
+                      <h5 className="text-base font-bold text-slate-200">Silver</h5>
+                      <span className="rounded-full bg-slate-300/15 px-2 py-1 text-xs font-semibold text-slate-200">
                         30% OFF
                       </span>
                     </div>
-                    <p className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
+                    <p className="mb-1 text-2xl font-bold text-white md:text-3xl">
                       {formatCurrency(customerSavings.silver)}
                     </p>
-                    <p className="text-xs text-gray-700">{t.savedPerYear}</p>
+                    <p className="text-xs text-slate-400">{t.savedPerYear}</p>
                   </div>
 
-                  <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl p-5 border-2 border-yellow-300">
+                  <div className="rounded-2xl border border-yellow-400/20 bg-yellow-400/[0.08] p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <h5 className="text-base font-bold text-yellow-900">Gold</h5>
-                      <span className="bg-yellow-200 text-yellow-800 text-xs font-semibold px-2 py-1 rounded-full">
+                      <h5 className="text-base font-bold text-yellow-200">Gold</h5>
+                      <span className="rounded-full bg-yellow-400/15 px-2 py-1 text-xs font-semibold text-yellow-300">
                         35% OFF
                       </span>
                     </div>
-                    <p className="text-2xl md:text-3xl font-bold text-yellow-900 mb-1">
+                    <p className="mb-1 text-2xl font-bold text-white md:text-3xl">
                       {formatCurrency(customerSavings.gold)}
                     </p>
-                    <p className="text-xs text-yellow-700">{t.savedPerYear}</p>
+                    <p className="text-xs text-yellow-200/60">{t.savedPerYear}</p>
                   </div>
                 </div>
               </>
             )}
 
-            <p className="text-xs text-gray-500 mt-5 text-center">
+            <p className="mt-4 text-center text-xs text-slate-500">
               {t.disclaimer}
             </p>
           </div>
@@ -433,22 +500,22 @@ const translations = {
 
         {/* Restaurant Calculator */}
         {activeTab === 'restaurant' && (
-          <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="bg-orange-100 p-3 rounded-lg text-orange-600">
+          <div className="calculator-reveal rounded-[28px] border border-white/[0.09] bg-white/[0.045] p-5 shadow-2xl sm:p-7">
+            <div className="mb-3 flex items-center gap-3">
+              <div className="rounded-xl bg-orange-500/15 p-2.5 text-orange-400">
                 <TrendingUp />
               </div>
-              <h3 className="text-xl md:text-2xl font-bold text-gray-900">
+              <h3 className="text-xl font-semibold text-white md:text-2xl">
                 {t.restaurantTitle}
               </h3>
             </div>
-            <p className="text-gray-600 mb-6">
+            <p className="mb-5 text-sm leading-6 text-slate-400">
               {t.restaurantSubtitle}
             </p>
 
-            <div className="grid md:grid-cols-2 gap-5 mb-8">
+            <div className="mb-5 grid gap-4 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="mb-2 block text-xs font-semibold text-slate-300">
                   {t.avgSpendLabel} ({t.currency})
                 </label>
                 <input
@@ -456,14 +523,14 @@ const translations = {
                   value={avgSpendPerReservation}
                   onChange={(e) => setAvgSpendPerReservation(e.target.value)}
                   placeholder={t.placeholder3}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:ring focus:ring-orange-200 transition-all text-lg"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-base text-white outline-none transition focus:border-orange-400/70 focus:ring-4 focus:ring-orange-500/10"
                   min="0"
                 />
                 <p className="text-xs text-gray-500 mt-1">{t.avgSpendHelper}</p>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="mb-2 block text-xs font-semibold text-slate-300">
                   {t.avgGuestsLabel}
                 </label>
                 <input
@@ -472,14 +539,14 @@ const translations = {
                   value={avgGuests}
                   onChange={(e) => setAvgGuests(e.target.value)}
                   placeholder={t.placeholder4}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:ring focus:ring-orange-200 transition-all text-lg"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-base text-white outline-none transition focus:border-orange-400/70 focus:ring-4 focus:ring-orange-500/10"
                   min="0"
                 />
                 <p className="text-xs text-gray-500 mt-1">{t.avgGuestsHelper}</p>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="mb-2 block text-xs font-semibold text-slate-300">
                   {t.weeklyReservationsLabel}
                 </label>
                 <input
@@ -487,14 +554,14 @@ const translations = {
                   value={weeklyReservations}
                   onChange={(e) => setWeeklyReservations(e.target.value)}
                   placeholder={t.placeholder5}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:ring focus:ring-orange-200 transition-all text-lg"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-base text-white outline-none transition focus:border-orange-400/70 focus:ring-4 focus:ring-orange-500/10"
                   min="0"
                 />
                 <p className="text-xs text-gray-500 mt-1">{t.weeklyReservationsHelper}</p>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="mb-2 block text-xs font-semibold text-slate-300">
                   {t.avgDiscountLabel}
                 </label>
                 <input
@@ -502,7 +569,7 @@ const translations = {
                   value={avgDiscount}
                   onChange={(e) => setAvgDiscount(e.target.value)}
                   placeholder={t.placeholder6}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:ring focus:ring-orange-200 transition-all text-lg"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-base text-white outline-none transition focus:border-orange-400/70 focus:ring-4 focus:ring-orange-500/10"
                   min="0"
                   max="100"
                 />
@@ -512,40 +579,40 @@ const translations = {
 
             {avgSpendPerReservation && avgGuests && weeklyReservations && avgDiscount && (
               <>
-                <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-6 border-2 border-orange-200">
-                  <h4 className="text-lg font-bold text-orange-900 mb-5">{t.projectedResultsTitle}</h4>
+                <div className="rounded-2xl border border-orange-400/20 bg-orange-500/[0.08] p-5">
+                  <h4 className="mb-4 text-lg font-semibold text-orange-200">{t.projectedResultsTitle}</h4>
                   
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="bg-white rounded-lg p-4 shadow-sm">
-                      <p className="text-xs text-gray-600 mb-1">{t.avgRevenuePerReservation}</p>
-                      <p className="text-xl font-bold text-gray-900">{formatCurrency(avgRevenuePerReservation)}</p>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div className="rounded-xl border border-white/[0.07] bg-white/[0.055] p-3.5">
+                      <p className="mb-1 text-xs text-slate-400">{t.avgRevenuePerReservation}</p>
+                      <p className="text-xl font-bold text-white">{formatCurrency(avgRevenuePerReservation)}</p>
                     </div>
 
-                    <div className="bg-white rounded-lg p-4 shadow-sm">
-                      <p className="text-xs text-gray-600 mb-1">{t.weeklyGrossRevenue}</p>
-                      <p className="text-xl font-bold text-gray-900">{formatCurrency(weeklyGrossRevenue)}</p>
+                    <div className="rounded-xl border border-white/[0.07] bg-white/[0.055] p-3.5">
+                      <p className="mb-1 text-xs text-slate-400">{t.weeklyGrossRevenue}</p>
+                      <p className="text-xl font-bold text-white">{formatCurrency(weeklyGrossRevenue)}</p>
                     </div>
 
-                    <div className="bg-white rounded-lg p-4 shadow-sm">
-                      <p className="text-xs text-gray-600 mb-1">{t.costOfDiscounts}</p>
-                      <p className="text-xl font-bold text-red-600">-{formatCurrency(costOfDiscounts)}</p>
+                    <div className="rounded-xl border border-white/[0.07] bg-white/[0.055] p-3.5">
+                      <p className="mb-1 text-xs text-slate-400">{t.costOfDiscounts}</p>
+                      <p className="text-xl font-bold text-red-400">-{formatCurrency(costOfDiscounts)}</p>
                     </div>
 
-                    <div className="bg-white rounded-lg p-4 shadow-sm">
-                      <p className="text-xs text-gray-600 mb-1">{t.netWeeklyRevenue}</p>
-                      <p className="text-xl font-bold text-green-600">{formatCurrency(netWeeklyRevenue)}</p>
+                    <div className="rounded-xl border border-white/[0.07] bg-white/[0.055] p-3.5">
+                      <p className="mb-1 text-xs text-slate-400">{t.netWeeklyRevenue}</p>
+                      <p className="text-xl font-bold text-emerald-400">{formatCurrency(netWeeklyRevenue)}</p>
                     </div>
                   </div>
 
-                  <div className="mt-6 bg-white rounded-lg p-5 border-4 border-orange-400 shadow-lg">
-                    <p className="text-xs text-gray-600 mb-1">{t.netAnnualRevenue}</p>
-                    <p className="text-3xl font-bold text-orange-600">{formatCurrency(netAnnualRevenue)}</p>
-                    <p className="text-xs text-gray-500 mt-2">{t.additionalRevenue}</p>
+                  <div className="mt-3 rounded-xl border border-orange-400/35 bg-orange-500/15 p-4 shadow-lg">
+                    <p className="mb-1 text-xs text-orange-200/70">{t.netAnnualRevenue}</p>
+                    <p className="text-3xl font-bold text-orange-400">{formatCurrency(netAnnualRevenue)}</p>
+                    <p className="mt-1 text-xs text-slate-400">{t.additionalRevenue}</p>
                   </div>
                 </div>
 
-                <div className="mt-5 bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-sm text-blue-800">
+                <div className="mt-3 rounded-xl border border-sky-400/15 bg-sky-400/[0.06] p-3">
+                  <p className="text-xs leading-5 text-sky-200/70">
                     <strong>{t.note}</strong> {t.noteText}
                   </p>
                 </div>
@@ -554,6 +621,29 @@ const translations = {
           </div>
         )}
       </div>
+
+      <style>{`
+        .calculator-reveal {
+          opacity: 0;
+          transform: translateY(28px);
+          transition-duration: 800ms;
+          transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .calculator-reveal.is-visible {
+          opacity: 1;
+          transform: translateY(0);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .calculator-reveal,
+          .calculator-reveal.is-visible {
+            opacity: 1;
+            transform: none;
+            transition: none;
+          }
+        }
+      `}</style>
     </div>
   );
 };

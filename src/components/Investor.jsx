@@ -1,7 +1,8 @@
-import React, { useState, useRef } from 'react';
-import { CheckCircle } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { ArrowRight, CheckCircle, Sparkles } from 'lucide-react';
 import ReCAPTCHA from "react-google-recaptcha";
 import { useLanguage } from '../App';
+import investorImage from '../assets/image6.png';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, addDoc, getDocs, serverTimestamp } from 'firebase/firestore';
 
@@ -40,6 +41,47 @@ const Investor = () => {
   const recaptchaRef = useRef(null);
   const [submitting, setSubmitting] = useState(false);
   const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY || "";
+
+  // Animation state
+  const [heroVisible, setHeroVisible] = useState(false);
+
+  useEffect(() => {
+    const reduceMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
+
+    if (reduceMotion) {
+      setHeroVisible(true);
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => setHeroVisible(true), 70);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const elements = document.querySelectorAll('.investor-reveal');
+
+    if (!('IntersectionObserver' in window)) {
+      elements.forEach((element) => element.classList.add('is-visible'));
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
+    );
+
+    elements.forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
+  }, [currentLanguage]);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -584,47 +626,82 @@ Reply to: ${formData.email}`
   const investmentLevels = currentContent.investmentLevels;
   const focusAreas = currentContent.focusAreas;
 
+  const heroTransition =
+    'transition-[opacity,transform] duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none';
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen overflow-hidden bg-[#0b1018] text-white">
       {/* Hero Section */}
-      <section className="py-20 px-6 bg-white">
-        <div className="max-w-5xl mx-auto text-center">
-          <div className="inline-flex items-center px-4 py-2 bg-orange-50 border border-orange-200 rounded-full mb-8">
-            <span className="text-orange-700 font-semibold text-sm">{currentContent.investmentOpportunity}</span>
+      <section className="relative isolate px-6 py-14 lg:py-20">
+        <div className="absolute inset-y-0 right-0 -z-10 w-full lg:w-[58%]">
+          <img src={investorImage} alt="Dinery investment opportunity" className="h-full w-full object-cover opacity-35 lg:opacity-60" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0b1018] via-[#0b1018]/80 to-[#0b1018]/15" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0b1018] via-transparent to-[#0b1018]/20" />
+        </div>
+        <div className="mx-auto grid min-h-[480px] max-w-7xl items-center lg:grid-cols-2">
+          <div className="max-w-2xl text-left">
+            <div 
+              className={`mb-5 inline-flex items-center gap-2 rounded-full border border-orange-400/20 bg-orange-400/10 px-3 py-1.5 ${heroTransition} ${
+                heroVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+              }`}
+              style={{ transitionDelay: heroVisible ? '70ms' : '0ms' }}
+            >
+              <Sparkles className="h-3.5 w-3.5 text-orange-400" />
+              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-orange-300">{currentContent.investmentOpportunity}</span>
+            </div>
+            
+            <h1 
+              className={`mb-6 max-w-xl text-4xl font-semibold leading-[1.02] tracking-[-0.045em] text-white sm:text-5xl lg:text-7xl ${heroTransition} ${
+                heroVisible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
+              }`}
+              style={{ transitionDelay: heroVisible ? '150ms' : '0ms' }}
+            >
+              {currentContent.requestMoreInfo}
+            </h1>
+            
+            <p 
+              className={`max-w-xl text-base leading-7 text-slate-300 sm:text-lg ${heroTransition} ${
+                heroVisible ? 'translate-y-0 opacity-100' : 'translate-y-5 opacity-0'
+              }`}
+              style={{ transitionDelay: heroVisible ? '270ms' : '0ms' }}
+            >
+              {currentContent.heroDescription}
+            </p>
+            <a 
+              href="#investor-contact" 
+              className={`mt-7 inline-flex items-center gap-2 rounded-full bg-orange-500 px-6 py-3 text-sm font-bold text-white shadow-[0_14px_40px_rgba(249,115,22,.25)] transition hover:bg-orange-400 ${heroTransition} ${
+                heroVisible ? 'translate-y-0 opacity-100' : 'translate-y-5 opacity-0'
+              }`}
+              style={{ transitionDelay: heroVisible ? '380ms' : '0ms' }}
+            >
+              {currentContent.requestMoreInfo}<ArrowRight className="h-4 w-4" />
+            </a>
           </div>
-          
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-8">
-            {currentContent.requestMoreInfo}
-          </h1>
-          
-          <p className="text-xl text-gray-700 leading-relaxed text-justify max-w-4xl mx-auto">
-            {currentContent.heroDescription}
-          </p>
         </div>
       </section>
 
       {/* Investment Benefits */}
-      <section className="py-20 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              {currentContent.forInvestors}
-            </h2>
-            <p className="text-lg text-gray-600">
-              {currentContent.fiveReasons}
-            </p>
+      <section className="border-y border-white/[0.07] bg-white/[0.025] px-6 py-12">
+        <div className="mx-auto max-w-7xl">
+          <div className="investor-reveal mb-8 text-left">
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-orange-400">{currentContent.forInvestors}</p>
+            <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">{currentContent.fiveReasons}</h2>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-5">
             {currentContent.investmentBenefits.map((benefit, index) => (
-              <div key={index} className={`bg-white p-8 rounded-2xl shadow-sm border border-gray-200 ${index === 4 ? 'md:col-span-2 lg:col-span-1' : ''}`}>
-                <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center mb-6">
-                  <span className="text-white font-bold text-lg">{benefit.number}</span>
+              <div 
+                key={index} 
+                className="investor-reveal rounded-2xl border border-white/[0.08] bg-white/[0.04] p-5 transition hover:-translate-y-1 hover:border-orange-400/30 hover:bg-white/[0.065]"
+                style={{ transitionDelay: `${index * 90}ms` }}
+              >
+                <div className="mb-7 flex h-9 w-9 items-center justify-center rounded-xl bg-orange-500/15">
+                  <span className="text-sm font-bold text-orange-400">0{benefit.number}</span>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">
+                <h3 className="mb-2 text-base font-semibold leading-6 text-white">
                   {benefit.title}
                 </h3>
-                <p className="text-gray-600 leading-relaxed">
+                <p className="text-sm leading-6 text-slate-400">
                   {benefit.description}
                 </p>
               </div>
@@ -634,18 +711,19 @@ Reply to: ${formData.email}`
       </section>
 
       {/* Contact Form */}
-      <section className="py-20 px-6 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+      <section id="investor-contact" className="px-6 py-12 lg:py-16">
+        <div className="mx-auto max-w-5xl">
+          <div className="investor-reveal mb-8 text-center">
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-orange-400">Private conversation</p>
+            <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
               {currentContent.getInTouch}
             </h2>
-            <p className="text-lg text-gray-600">
+            <p className="mx-auto mt-3 max-w-xl text-base text-slate-400">
               {currentContent.getInTouchDescription}
             </p>
           </div>
 
-          <div className="bg-gray-50 p-10 rounded-3xl">
+          <div className="investor-reveal rounded-[28px] border border-white/[0.09] bg-white/[0.045] p-5 shadow-2xl sm:p-7" style={{ transitionDelay: '100ms' }}>
             {/* Error Message */}
             {submitError && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
@@ -653,11 +731,11 @@ Reply to: ${formData.email}`
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-8">
+            <form onSubmit={handleSubmit} className="space-y-4">
               {/* Name Fields */}
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-3">
+                  <label className="mb-2 block text-xs font-semibold text-slate-300">
                     {currentContent.firstName} <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -667,11 +745,11 @@ Reply to: ${formData.email}`
                     onChange={handleInputChange}
                     placeholder={currentContent.firstName}
                     required
-                    className="w-full px-4 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors bg-white"
+                    className="w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm text-white outline-none focus:border-orange-400/70 focus:ring-4 focus:ring-orange-500/10"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-3">
+                  <label className="mb-2 block text-xs font-semibold text-slate-300">
                     {currentContent.lastName} <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -681,15 +759,15 @@ Reply to: ${formData.email}`
                     onChange={handleInputChange}
                     placeholder={currentContent.lastName}
                     required
-                    className="w-full px-4 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors bg-white"
+                    className="w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm text-white outline-none focus:border-orange-400/70 focus:ring-4 focus:ring-orange-500/10"
                   />
                 </div>
               </div>
 
               {/* Email and Phone */}
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-3">
+                  <label className="mb-2 block text-xs font-semibold text-slate-300">
                     {currentContent.email} <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -699,11 +777,11 @@ Reply to: ${formData.email}`
                     onChange={handleInputChange}
                     placeholder={currentContent.email}
                     required
-                    className="w-full px-4 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors bg-white"
+                    className="w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm text-white outline-none focus:border-orange-400/70 focus:ring-4 focus:ring-orange-500/10"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-3">
+                  <label className="mb-2 block text-xs font-semibold text-slate-300">
                     {currentContent.phoneNumber}
                   </label>
                   <input
@@ -712,15 +790,15 @@ Reply to: ${formData.email}`
                     value={formData.phoneNumber}
                     onChange={handleInputChange}
                     placeholder={currentContent.phoneNumber}
-                    className="w-full px-4 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors bg-white"
+                    className="w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm text-white outline-none focus:border-orange-400/70 focus:ring-4 focus:ring-orange-500/10"
                   />
                 </div>
               </div>
 
               {/* Company and Investment Level */}
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-3">
+                  <label className="mb-2 block text-xs font-semibold text-slate-300">
                     {currentContent.companyBackground}
                   </label>
                   <input
@@ -729,18 +807,18 @@ Reply to: ${formData.email}`
                     value={formData.company}
                     onChange={handleInputChange}
                     placeholder={currentContent.companyBackground}
-                    className="w-full px-4 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors bg-white"
+                    className="w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm text-white outline-none focus:border-orange-400/70 focus:ring-4 focus:ring-orange-500/10"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-3">
+                  <label className="mb-2 block text-xs font-semibold text-slate-300">
                     {currentContent.investmentLevel}
                   </label>
                   <select
                     name="investmentLevel"
                     value={formData.investmentLevel}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors bg-white"
+                    className="w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm text-white outline-none focus:border-orange-400/70 focus:ring-4 focus:ring-orange-500/10"
                   >
                     {investmentLevels.map((level, index) => (
                       <option key={level} value={level}>{level}</option>
@@ -751,14 +829,14 @@ Reply to: ${formData.email}`
 
               {/* Preferred Focus Area */}
               <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-3">
+                <label className="mb-2 block text-xs font-semibold text-slate-300">
                   {currentContent.focusArea}
                 </label>
                 <select
                   name="focusArea"
                   value={formData.focusArea}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors bg-white"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm text-white outline-none focus:border-orange-400/70 focus:ring-4 focus:ring-orange-500/10"
                 >
                   {focusAreas.map((area, index) => (
                     <option key={area} value={area}>{area}</option>
@@ -768,7 +846,7 @@ Reply to: ${formData.email}`
 
               {/* Message */}
               <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-3">
+                <label className="mb-2 block text-xs font-semibold text-slate-300">
                   {currentContent.message}
                 </label>
                 <textarea
@@ -776,13 +854,13 @@ Reply to: ${formData.email}`
                   value={formData.message}
                   onChange={handleInputChange}
                   placeholder={currentContent.messagePlaceholder}
-                  rows="5"
-                  className="w-full px-4 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors resize-vertical bg-white"
+                  rows="3"
+                  className="w-full resize-y rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm text-white outline-none focus:border-orange-400/70 focus:ring-4 focus:ring-orange-500/10"
                 ></textarea>
               </div>
 
               {/* Consent and reCAPTCHA */}
-              <div className="space-y-6">
+              <div className="space-y-4">
                 <div className="flex items-start space-x-3">
                   <input
                     type="checkbox"
@@ -792,7 +870,7 @@ Reply to: ${formData.email}`
                     required
                     className="w-5 h-5 text-orange-500 border-gray-300 rounded focus:ring-orange-500 mt-1"
                   />
-                  <label className="text-sm text-gray-700 leading-relaxed">
+                  <label className="text-xs leading-5 text-slate-400">
                     {currentContent.dataConsent} <span className="text-red-500">*</span>
                   </label>
                 </div>
@@ -814,13 +892,13 @@ Reply to: ${formData.email}`
                       reCAPTCHA site key is not set. Add VITE_RECAPTCHA_SITE_KEY to your .env for bot protection.
                     </p>
                     {/* Fallback fake reCAPTCHA for development */}
-                    <div className="inline-flex bg-white border border-gray-300 rounded-lg p-4 items-center space-x-3">
+                    <div className="inline-flex items-center space-x-3 rounded-xl border border-white/10 bg-white/[0.06] p-3">
                       <input 
                         type="checkbox" 
                         className="w-5 h-5 text-orange-500" 
                         onChange={(e) => setCaptchaToken(e.target.checked ? "development-token" : "")}
                       />
-                      <span className="text-sm text-gray-700">{currentContent.notRobot}</span>
+                      <span className="text-sm text-slate-300">{currentContent.notRobot}</span>
                       <div className="text-xs text-gray-500 ml-4">reCAPTCHA</div>
                     </div>
                   </div>
@@ -845,7 +923,7 @@ Reply to: ${formData.email}`
               <button
                 type="submit"
                 disabled={submitting || (RECAPTCHA_SITE_KEY && !captchaToken) || !formData.dataConsent}
-                className={`w-full py-5 px-8 rounded-xl text-xl font-semibold transition-all duration-200 ${
+                className={`w-full rounded-xl px-8 py-3.5 text-sm font-bold transition-all duration-200 ${
                   isSubmitted 
                     ? 'bg-green-500 text-white' 
                     : submitting
@@ -872,6 +950,29 @@ Reply to: ${formData.email}`
           </div>
         </div>
       </section>
+
+      <style>{`
+        .investor-reveal {
+          opacity: 0;
+          transform: translateY(28px);
+          transition-duration: 800ms;
+          transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .investor-reveal.is-visible {
+          opacity: 1;
+          transform: translateY(0);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .investor-reveal,
+          .investor-reveal.is-visible {
+            opacity: 1;
+            transform: none;
+            transition: none;
+          }
+        }
+      `}</style>
     </div>
   );
 };

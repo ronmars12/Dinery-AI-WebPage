@@ -1,11 +1,53 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useLanguage } from '../App';
+
+const FAQ_IMAGE =
+  'https://images.unsplash.com/photo-1718578061045-b17fe1dbbd77?auto=format&fit=crop&w=1600&q=82';
 
 const FAQ = () => {
   const { currentLanguage } = useLanguage();
   const [activeTab, setActiveTab] = useState('customers');
   const [openItems, setOpenItems] = useState({});
+  const [heroVisible, setHeroVisible] = useState(false);
+
+  useEffect(() => {
+    const reduceMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
+
+    if (reduceMotion) {
+      setHeroVisible(true);
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => setHeroVisible(true), 70);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const elements = document.querySelectorAll('.faq-reveal');
+
+    if (!('IntersectionObserver' in window)) {
+      elements.forEach((element) => element.classList.add('is-visible'));
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
+    );
+
+    elements.forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
+  }, [currentLanguage]);
 
   const toggleItem = (id) =>
     setOpenItems((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -111,7 +153,7 @@ const FAQ = () => {
         { question: 'Mikä on markkinapotentiaali?', answer: 'Globaalit ravintola- ja ruokapalvelumarkkinat ylittävät 4 biljoonaa dollaria. Jopa pieni osuus tästä edustaa miljardin dollarin mahdollisuutta.' },
         { question: 'Mikä on liiketoimintamallini?', answer: 'Toimimme freemium- ja SaaS-mallilla valinnaisilla premium-ominaisuuksilla ja tulojenjaolla promootiotarjouksille.' },
         { question: 'Miten hankitte ravintoloita?', answer: 'Suoran yhteydenoton, digitaalisten kampanjoiden ja suositusten kautta. Keskitymme itsenäisiin ravintoloihin, jotka haluavat enemmän kontrollia ja voittoa.' },
-        { question: 'Miten hankitte asiakkaita?', answer: 'Hyperpaikalliset markkinointi, sosiaalisen median, vaikuttajien ja geograafisesti kohdistettujen tarjousten kautta ohjataksemme käyttöönotoa ja uskollisuutta.' },
+        { question: 'Miten hankitte asiakkaita?', answer: 'Hyperpaikalliset markkinointi, sosiaalisen median, vaikuttajien ja geograafisesti kohdistettujen tarjousten kautta ohjataksemme käyttöönottoa ja uskollisuutta.' },
         { question: 'Veloitteko ravintoloista välityspalkkion?', answer: 'Ei. Toisin kuin kuljetusalustat, emme ota prosenttia ravintolan tuloista. Ravintolat pitävät 100%.' },
         { question: 'Onko vetovoimaa tai konseptitodiste?', answer: 'Rakennamme varhaisten omaksujen kanssa ja olemme saaneet positiivista palautetta sekä ravintoloilta että asiakkailta pilottiyhteydenoton aikana.' },
         { question: 'Mikä tekee teistä erilaisen kuin kuljetussovellukset?', answer: 'Voimaannutamme suoria suhteita ravintoloiden ja kuluttajien välillä, alhaisemmilla toimintakustannuksilla, ei kuriireita ja paremmat voittomarginaalit.' },
@@ -256,22 +298,47 @@ const FAQ = () => {
 
   const activeData = tabs.find((t) => t.id === activeTab)?.data || [];
 
+  const heroTransition =
+    'transition-[opacity,transform] duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none';
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-5xl mx-auto px-6 py-20">
+    <main className="min-h-screen overflow-hidden bg-[#0b1018] text-white">
+      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 lg:py-10">
         {/* Header */}
-        <div className="text-center mb-16">
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-8">
-            {currentContent.title}
-          </h1>
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            {currentContent.subtitle}
-          </p>
+        <div className="relative mb-5 overflow-hidden rounded-[28px] border border-white/10 px-6 py-9 sm:px-9 lg:py-12">
+          <img src={FAQ_IMAGE} alt="Premium restaurant dining room" className="absolute inset-0 h-full w-full object-cover opacity-30" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0b1018] via-[#0b1018]/90 to-[#0b1018]/30" />
+          <div className="relative max-w-2xl">
+            <span 
+              className={`mb-3 inline-flex rounded-full border border-orange-400/20 bg-orange-400/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-orange-300 ${heroTransition} ${
+                heroVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+              }`}
+              style={{ transitionDelay: heroVisible ? '70ms' : '0ms' }}
+            >
+              Help centre
+            </span>
+            <h1 
+              className={`mb-3 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl lg:text-5xl ${heroTransition} ${
+                heroVisible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
+              }`}
+              style={{ transitionDelay: heroVisible ? '150ms' : '0ms' }}
+            >
+              {currentContent.title}
+            </h1>
+            <p 
+              className={`max-w-xl text-sm leading-6 text-slate-300 sm:text-base ${heroTransition} ${
+                heroVisible ? 'translate-y-0 opacity-100' : 'translate-y-5 opacity-0'
+              }`}
+              style={{ transitionDelay: heroVisible ? '270ms' : '0ms' }}
+            >
+              {currentContent.subtitle}
+            </p>
+          </div>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex flex-col sm:flex-row justify-center mb-12">
-          <div className="bg-white rounded-xl p-2 shadow-sm border border-gray-200 inline-flex">
+        <div className="faq-reveal mb-5 flex justify-center">
+          <div className="inline-flex w-full max-w-xl rounded-2xl border border-white/10 bg-white/[0.05] p-1.5">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
@@ -279,10 +346,10 @@ const FAQ = () => {
                   setActiveTab(tab.id);
                   setOpenItems({});
                 }}
-                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
+                className={`flex-1 rounded-xl px-3 py-2.5 text-xs font-semibold transition-all duration-200 sm:text-sm ${
                   activeTab === tab.id
-                    ? 'bg-orange-500 text-white shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    ? 'bg-orange-500 text-white shadow-lg shadow-orange-950/30'
+                    : 'text-slate-400 hover:bg-white/[0.04] hover:text-white'
                 }`}
               >
                 {tab.label}
@@ -292,49 +359,79 @@ const FAQ = () => {
         </div>
 
         {/* FAQ Content */}
-        <div className="space-y-4">
+        <div className="grid items-start gap-3 lg:grid-cols-2">
           {activeData.map((faq, idx) => {
             const id = `${activeTab}-${idx}`;
             const open = !!openItems[id];
             return (
-              <div key={id} className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+              <article 
+                key={id} 
+                className={`faq-reveal overflow-hidden rounded-2xl border transition ${open ? 'border-orange-400/30 bg-white/[0.07]' : 'border-white/[0.08] bg-white/[0.04] hover:border-white/15'}`}
+                style={{ transitionDelay: `${idx * 40}ms` }}
+              >
                 <button
                   onClick={() => toggleItem(id)}
-                  className="w-full px-6 py-5 text-left flex justify-between items-center hover:bg-orange-50 transition-colors"
+                  aria-expanded={open}
+                  className="flex w-full items-center justify-between px-5 py-4 text-left transition-colors"
                 >
-                  <span className="font-semibold text-gray-900 pr-4">{faq.question}</span>
+                  <span className="pr-4 text-sm font-semibold leading-5 text-slate-100 sm:text-[15px]">{faq.question}</span>
                   {open ? (
-                    <ChevronUp className="w-5 h-5 text-orange-500 flex-shrink-0" />
+                    <ChevronUp className="h-4 w-4 flex-shrink-0 text-orange-400" />
                   ) : (
-                    <ChevronDown className="w-5 h-5 text-orange-500 flex-shrink-0" />
+                    <ChevronDown className="h-4 w-4 flex-shrink-0 text-slate-500" />
                   )}
                 </button>
                 {open && (
-                  <div className="px-6 pb-5">
-                    <div className="border-t border-gray-100 pt-4">
-                      <p className="text-gray-700 leading-relaxed">{faq.answer}</p>
+                  <div className="px-5 pb-4">
+                    <div className="border-t border-white/[0.07] pt-3">
+                      <p className="text-sm leading-6 text-slate-400">{faq.answer}</p>
                     </div>
                   </div>
                 )}
-              </div>
+              </article>
             );
           })}
         </div>
 
         {/* Contact CTA */}
-        <div className="text-center mt-16">
-          <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">
+        <div className="faq-reveal mt-6" style={{ transitionDelay: '100ms' }}>
+          <div className="flex flex-col items-start justify-between gap-5 rounded-[24px] border border-orange-400/20 bg-gradient-to-r from-orange-500/15 to-white/[0.03] p-5 sm:flex-row sm:items-center sm:px-7">
+            <div>
+            <h3 className="text-xl font-semibold text-white">
               {currentContent.stillHaveQuestions}
             </h3>
-            <p className="text-gray-600 mb-6">{currentContent.cantFind}</p>
-            <button className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-xl font-semibold transition-colors">
+            <p className="mt-1 text-sm text-slate-400">{currentContent.cantFind}</p>
+            </div>
+            <a href="mailto:developers@dinery.ai" className="shrink-0 rounded-full bg-orange-500 px-6 py-3 text-sm font-bold text-white transition hover:bg-orange-400">
               {currentContent.contactUs}
-            </button>
+            </a>
           </div>
         </div>
       </div>
-    </div>
+
+      <style>{`
+        .faq-reveal {
+          opacity: 0;
+          transform: translateY(28px);
+          transition-duration: 800ms;
+          transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .faq-reveal.is-visible {
+          opacity: 1;
+          transform: translateY(0);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .faq-reveal,
+          .faq-reveal.is-visible {
+            opacity: 1;
+            transform: none;
+            transition: none;
+          }
+        }
+      `}</style>
+    </main>
   );
 };
 

@@ -1,371 +1,370 @@
-import React, { useState } from 'react';
-import { CheckCircle, Star, Users, Utensils, Clock, Shield, Gift, MapPin, Sparkles } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { ArrowUpRight, MapPin, Sparkles, Store } from 'lucide-react';
 import { useLanguage } from '../App';
 import appStoreBadge from '../assets/appstore.png';
 import playStoreBadge from '../assets/playstore.png';
+import dineryApp from '../assets/DineryApp.png';
+
+const translations = {
+  US: {
+    label: 'DINERY FOR DINERS',
+    title1: 'Discover local dining.',
+    title2: 'Choose what fits tonight.',
+    description:
+      'Dinery brings nearby restaurants and restaurant-led opportunities into one clear, easy-to-use experience.',
+    appStoreTop: 'Download on the',
+    appStore: 'App Store',
+    comingSoon: 'COMING SOON',
+    playStore: 'Google Play',
+    note: 'Explore the iOS app today. Android support is on the way.',
+    sectionLabel: 'WHY DINERY',
+    sectionTitle: 'A simpler way to choose where to eat.',
+    benefits: [
+      {
+        title: 'Discover nearby',
+        description: 'Explore participating local restaurants in one focused place.',
+      },
+      {
+        title: 'Choose with clarity',
+        description: 'See restaurant-led availability and conditions before deciding.',
+      },
+      {
+        title: 'Support local dining',
+        description: 'Connect directly with restaurants in your community.',
+      },
+    ],
+  },
+  FI: {
+    label: 'DINERY RUOKAILIJOILLE',
+    title1: 'Löydä paikallisia ravintoloita.',
+    title2: 'Valitse tämän illan suunnitelma.',
+    description:
+      'Dinery kokoaa lähiravintolat ja niiden omat mahdollisuudet yhteen selkeään kokemukseen.',
+    appStoreTop: 'Lataa',
+    appStore: 'App Storesta',
+    comingSoon: 'TULOSSA PIAN',
+    playStore: 'Google Play',
+    note: 'Tutustu iOS-sovellukseen jo tänään. Android-tuki on tulossa.',
+    sectionLabel: 'MIKSI DINERY',
+    sectionTitle: 'Helpompi tapa valita ruokapaikka.',
+    benefits: [
+      {
+        title: 'Löydä läheltä',
+        description: 'Tutustu paikallisiin ravintoloihin yhdessä selkeässä paikassa.',
+      },
+      {
+        title: 'Valitse selkeästi',
+        description: 'Näe ravintolan saatavuus ja ehdot ennen valintaa.',
+      },
+      {
+        title: 'Tue paikallisia',
+        description: 'Luo suora yhteys oman alueesi ravintoloihin.',
+      },
+    ],
+  },
+  NO: {
+    label: 'DINERY FOR GJESTER',
+    title1: 'Oppdag lokale restauranter.',
+    title2: 'Velg det som passer i kveld.',
+    description:
+      'Dinery samler restauranter i nærheten og restaurantstyrte muligheter i én tydelig opplevelse.',
+    appStoreTop: 'Last ned på',
+    appStore: 'App Store',
+    comingSoon: 'KOMMER SNART',
+    playStore: 'Google Play',
+    note: 'Utforsk iOS-appen i dag. Android-støtte er på vei.',
+    sectionLabel: 'HVORFOR DINERY',
+    sectionTitle: 'En enklere måte å velge spisested.',
+    benefits: [
+      {
+        title: 'Oppdag i nærheten',
+        description: 'Utforsk lokale restauranter på ett oversiktlig sted.',
+      },
+      {
+        title: 'Velg med klarhet',
+        description: 'Se tilgjengelighet og vilkår før du bestemmer deg.',
+      },
+      {
+        title: 'Støtt lokalt',
+        description: 'Kom i direkte kontakt med restauranter i nærmiljøet.',
+      },
+    ],
+  },
+  SE: {
+    label: 'DINERY FÖR GÄSTER',
+    title1: 'Upptäck lokala restauranger.',
+    title2: 'Välj det som passar ikväll.',
+    description:
+      'Dinery samlar restauranger i närheten och restaurangstyrda möjligheter i en tydlig upplevelse.',
+    appStoreTop: 'Hämta i',
+    appStore: 'App Store',
+    comingSoon: 'KOMMER SNART',
+    playStore: 'Google Play',
+    note: 'Utforska iOS-appen idag. Android-stöd är på väg.',
+    sectionLabel: 'VARFÖR DINERY',
+    sectionTitle: 'Ett enklare sätt att välja restaurang.',
+    benefits: [
+      {
+        title: 'Upptäck i närheten',
+        description: 'Utforska lokala restauranger på en tydlig plats.',
+      },
+      {
+        title: 'Välj med tydlighet',
+        description: 'Se tillgänglighet och villkor innan du väljer.',
+      },
+      {
+        title: 'Stöd lokalt',
+        description: 'Skapa direkt kontakt med restauranger i ditt område.',
+      },
+    ],
+  },
+  DE: {
+    label: 'DINERY FÜR GÄSTE',
+    title1: 'Lokale Restaurants entdecken.',
+    title2: 'Wählen, was heute passt.',
+    description:
+      'Dinery bündelt Restaurants in der Nähe und restaurantgeführte Möglichkeiten in einem klaren Erlebnis.',
+    appStoreTop: 'Laden im',
+    appStore: 'App Store',
+    comingSoon: 'BALD VERFÜGBAR',
+    playStore: 'Google Play',
+    note: 'Entdecken Sie heute die iOS-App. Android-Unterstützung folgt.',
+    sectionLabel: 'WARUM DINERY',
+    sectionTitle: 'Ein einfacherer Weg zum passenden Restaurant.',
+    benefits: [
+      {
+        title: 'In der Nähe entdecken',
+        description: 'Lokale Restaurants übersichtlich an einem Ort finden.',
+      },
+      {
+        title: 'Klar entscheiden',
+        description: 'Verfügbarkeit und Bedingungen vor der Wahl sehen.',
+      },
+      {
+        title: 'Lokal unterstützen',
+        description: 'Direkt mit Restaurants in Ihrer Umgebung verbinden.',
+      },
+    ],
+  },
+};
+
+const benefitIcons = [MapPin, Sparkles, Store];
 
 const Customer = () => {
   const { currentLanguage } = useLanguage();
-  const [formData, setFormData] = useState({
-    firstName: '',
-    email: ''
-  });
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const t = translations[currentLanguage] || translations.US;
+  const [heroVisible, setHeroVisible] = useState(false);
 
-  const handleInputChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
+  useEffect(() => {
+    const reduceMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Handle form submission here
-    setIsSubmitted(true);
-    setTimeout(() => setIsSubmitted(false), 3000);
-  };
-
-  // Content translations
-  const content = {
-    US: {
-      earlyAccess: 'Early Access Available',
-      joinWaitlist: 'Download Now',
-      description: 'At Dinery.ai, we believe that great food should be accessible, affordable, and community-driven. As a customer, you\'re not just saving money – you\'re participating in something bigger. Whether you\'re dining in or picking up takeaway, you\'ll enjoy exclusive offers from local restaurants that care about quality and service. By choosing Dinery.ai, you\'re helping small businesses thrive, reducing dependence on costly delivery platforms, and putting more value back into your neighborhood. Join the waitlist and be part of a smarter dining future.',
-      benefits: [
-        {
-          number: "1",
-          title: "Save up to 60% on selected meals",
-          description: "Get exclusive discounts on dine-in and takeaway meals at quality local restaurants."
-        },
-        {
-          number: "2", 
-          title: "Support local businesses",
-          description: "Help independent restaurants thrive by choosing them over multinational delivery chains."
-        },
-        {
-          number: "3",
-          title: "Enjoy better food experiences",
-          description: "Discover hidden gems and eat fresher food without third-party delivery delays."
-        },
-        {
-          number: "4",
-          title: "Take control of your dining costs",
-          description: "Skip expensive delivery apps and enjoy direct deals from restaurants."
-        },
-        {
-          number: "5",
-          title: "Be part of a smarter food movement",
-          description: "Join a platform that prioritizes fairness, transparency, and community impact."
-        },
-        {
-          number: "6",
-          title: "Customize your experience",
-          description: "You decide when, where and what kind of offers you wish to receive."
-        }
-      ],
-      getEarlyAccess: 'Get Early Access',
-      firstName: 'First Name',
-      email: 'Email',
-      firstNamePlaceholder: 'First Name',
-      emailPlaceholder: 'Email',
-      notRobot: 'I\'m not a robot',
-      joinWaitlistBtn: 'Join the Waitlist',
-      successMessage: 'Successfully Submitted!',
-      securePrivate: 'Secure & Private',
-      earlyAccessBenefits: 'Early Access Benefits',
-      additionalInfo: 'Be among the first to experience smarter dining. No spam, just exclusive early access.'
-    },
-    FI: {
-      earlyAccess: 'Ennakkopääsy saatavilla',
-      joinWaitlist: 'Liity jonotuslistalle',
-      description: 'Dinery.ai:ssa uskomme, että hyvän ruoan tulisi olla saavutettavaa, edullista ja yhteisöllistä. Asiakkaana et vain säästä rahaa – osallistut johonkin suurempaan. Olipa kyse ravintolassa syömisestä tai noutoruoasta, nautit paikallisten ravintoloiden eksklusiivisista tarjouksista, jotka välittävät laadusta ja palvelusta. Valitsemalla Dinery.ai:n autat pieniä yrityksiä menestymään, vähennät riippuvuutta kalliista toimitusalustoista ja tuot lisää arvoa takaisin naapurustoosi. Liity jonotuslistalle ja ole osa älykkäämpää ruokailun tulevaisuutta.',
-      benefits: [
-        {
-          number: "1",
-          title: "Säästä jopa 60% valituista aterioista",
-          description: "Hanki eksklusiivisia alennuksia ravintola- ja noutoaterioista laadukkailta paikallisilta ravintoloilta."
-        },
-        {
-          number: "2", 
-          title: "Tue paikallisia yrityksiä",
-          description: "Auta itsenäisiä ravintoloita menestymään valitsemalla ne monikansallisten toimitusketjujen sijaan."
-        },
-        {
-          number: "3",
-          title: "Nauti paremmista ruokakokemuksista",
-          description: "Löydä piilotettuja helmiä ja syö tuoreempaa ruokaa ilman kolmannen osapuolen toimitusviiveitä."
-        },
-        {
-          number: "4",
-          title: "Hallitse ruokailukustannuksiasi",
-          description: "Ohita kalliit toimitus-sovellukset ja nauti suorista tarjouksista ravintoloista."
-        },
-        {
-          number: "5",
-          title: "Ole osa älykkäämpää ruokaliikettä",
-          description: "Liity alustaan, joka asettaa oikeudenmukaisuuden, läpinäkyvyyden ja yhteisövaikutuksen etusijalle."
-        },
-        {
-          number: "6",
-          title: "Mukauta kokemuksesi",
-          description: "Sinä päätät milloin, missä ja millaisia tarjouksia haluat vastaanottaa."
-        }
-      ],
-      getEarlyAccess: 'Hanki ennakkopääsy',
-      firstName: 'Etunimi',
-      email: 'Sähköposti',
-      firstNamePlaceholder: 'Etunimi',
-      emailPlaceholder: 'Sähköposti',
-      notRobot: 'En ole robotti',
-      joinWaitlistBtn: 'Liity jonotuslistalle',
-      successMessage: 'Lähetetty onnistuneesti!',
-      securePrivate: 'Turvallinen ja yksityinen',
-      earlyAccessBenefits: 'Ennakkopääsyn edut',
-      additionalInfo: 'Ole ensimmäisten joukossa kokemassa älykkäämpää ruokailua. Ei roskapostia, vain eksklusiivinen ennakkopääsy.'
-    },
-    NO: {
-      earlyAccess: 'Tidlig tilgang tilgjengelig',
-      joinWaitlist: 'Bli med på ventelisten',
-      description: 'Hos Dinery.ai tror vi at god mat skal være tilgjengelig, rimelig og samfunnsdrevet. Som kunde sparer du ikke bare penger – du deltar i noe større. Enten du spiser inne eller henter takeaway, vil du nyte eksklusive tilbud fra lokale restauranter som bryr seg om kvalitet og service. Ved å velge Dinery.ai hjelper du små bedrifter med å blomstre, reduserer avhengigheten av kostbare leveringsplattformer, og setter mer verdi tilbake i nabolaget ditt. Bli med på ventelisten og vær en del av en smartere spisefremtid.',
-      benefits: [
-        {
-          number: "1",
-          title: "Spar opptil 60% på utvalgte måltider",
-          description: "Få eksklusive rabatter på spise-inn og takeaway måltider på kvalitets lokale restauranter."
-        },
-        {
-          number: "2", 
-          title: "Støtt lokale bedrifter",
-          description: "Hjelp uavhengige restauranter å blomstre ved å velge dem over multinasjonale leveringskjeder."
-        },
-        {
-          number: "3",
-          title: "Nyt bedre matopplevelser",
-          description: "Oppdag skjulte perler og spis friskere mat uten tredjeparts leveringsforsinkelser."
-        },
-        {
-          number: "4",
-          title: "Ta kontroll over spisekostnadene dine",
-          description: "Hopp over dyre leveringsapper og nyt direkte tilbud fra restauranter."
-        },
-        {
-          number: "5",
-          title: "Vær en del av en smartere matbevegelse",
-          description: "Bli med i en plattform som prioriterer rettferdighet, åpenhet og samfunnspåvirkning."
-        },
-        {
-          number: "6",
-          title: "Tilpass opplevelsen din",
-          description: "Du bestemmer når, hvor og hvilken type tilbud du ønsker å motta."
-        }
-      ],
-      getEarlyAccess: 'Få tidlig tilgang',
-      firstName: 'Fornavn',
-      email: 'E-post',
-      firstNamePlaceholder: 'Fornavn',
-      emailPlaceholder: 'E-post',
-      notRobot: 'Jeg er ikke en robot',
-      joinWaitlistBtn: 'Bli med på ventelisten',
-      successMessage: 'Sendt inn!',
-      securePrivate: 'Sikker og privat',
-      earlyAccessBenefits: 'Tidlig tilgangsfordeler',
-      additionalInfo: 'Vær blant de første som opplever smartere spising. Ingen spam, bare eksklusiv tidlig tilgang.'
-    },
-    SE: {
-      earlyAccess: 'Tidig åtkomst tillgänglig',
-      joinWaitlist: 'Gå med på väntelistan',
-      description: 'På Dinery.ai tror vi att bra mat ska vara tillgänglig, prisvärd och gemenskapsdriven. Som kund sparar du inte bara pengar – du deltar i något större. Oavsett om du äter inne eller hämtar takeaway kommer du att njuta av exklusiva erbjudanden från lokala restauranger som bryr sig om kvalitet och service. Genom att välja Dinery.ai hjälper du små företag att blomstra, minskar beroendet av dyra leveransplattformar och för mer värde tillbaka till ditt grannskap. Gå med på väntelistan och var en del av en smartare matframtid.',
-      benefits: [
-        {
-          number: "1",
-          title: "Spara upp till 60% på utvalda måltider",
-          description: "Få exklusiva rabatter på äta-inne och takeaway måltider på kvalitets lokala restauranger."
-        },
-        {
-          number: "2", 
-          title: "Stöd lokala företag",
-          description: "Hjälp oberoende restauranger att blomstra genom att välja dem framför multinationella leveranskedjor."
-        },
-        {
-          number: "3",
-          title: "Njut av bättre matupplevelser",
-          description: "Upptäck dolda pärlor och ät färskare mat utan tredjepartsleveransförseningar."
-        },
-        {
-          number: "4",
-          title: "Ta kontroll över dina matkostnader",
-          description: "Hoppa över dyra leveransappar och njut av direkta erbjudanden från restauranger."
-        },
-        {
-          number: "5",
-          title: "Var en del av en smartare matrörelse",
-          description: "Gå med i en plattform som prioriterar rättvisa, transparens och samhällspåverkan."
-        },
-        {
-          number: "6",
-          title: "Anpassa din upplevelse",
-          description: "Du bestämmer när, var och vilken typ av erbjudanden du vill ta emot."
-        }
-      ],
-      getEarlyAccess: 'Få tidig åtkomst',
-      firstName: 'Förnamn',
-      email: 'E-post',
-      firstNamePlaceholder: 'Förnamn',
-      emailPlaceholder: 'E-post',
-      notRobot: 'Jag är inte en robot',
-      joinWaitlistBtn: 'Gå med på väntelistan',
-      successMessage: 'Framgångsrikt skickat!',
-      securePrivate: 'Säker och privat',
-      earlyAccessBenefits: 'Tidig åtkomstfördelar',
-      additionalInfo: 'Var bland de första som upplever smartare matupplevelser. Ingen spam, bara exklusiv tidig åtkomst.'
-    },
-    DE: {
-      earlyAccess: 'Früher Zugang verfügbar',
-      joinWaitlist: 'Zur Warteliste beitreten',
-      description: 'Bei Dinery.ai glauben wir, dass gutes Essen zugänglich, erschwinglich und gemeinschaftsorientiert sein sollte. Als Kunde sparen Sie nicht nur Geld – Sie nehmen an etwas Größerem teil. Ob Sie vor Ort speisen oder Takeaway abholen, Sie genießen exklusive Angebote von lokalen Restaurants, die sich um Qualität und Service kümmern. Durch die Wahl von Dinery.ai helfen Sie kleinen Unternehmen zu gedeihen, reduzieren die Abhängigkeit von teuren Lieferplattformen und bringen mehr Wert zurück in Ihre Nachbarschaft. Treten Sie der Warteliste bei und seien Sie Teil einer smarteren Gastronomie-Zukunft.',
-      benefits: [
-        {
-          number: "1",
-          title: "Sparen Sie bis zu 60% bei ausgewählten Mahlzeiten",
-          description: "Erhalten Sie exklusive Rabatte auf Speisen vor Ort und Takeaway-Mahlzeiten in hochwertigen lokalen Restaurants."
-        },
-        {
-          number: "2", 
-          title: "Unterstützen Sie lokale Unternehmen",
-          description: "Helfen Sie unabhängigen Restaurants zu gedeihen, indem Sie sie multinationalen Lieferketten vorziehen."
-        },
-        {
-          number: "3",
-          title: "Genießen Sie bessere Gastronomie-Erlebnisse",
-          description: "Entdecken Sie versteckte Perlen und essen Sie frischeres Essen ohne Lieferverzögerungen durch Dritte."
-        },
-        {
-          number: "4",
-          title: "Übernehmen Sie die Kontrolle über Ihre Gastronomiekosten",
-          description: "Überspringen Sie teure Lieferapps und genießen Sie direkte Angebote von Restaurants."
-        },
-        {
-          number: "5",
-          title: "Seien Sie Teil einer smarteren Gastronomie-Bewegung",
-          description: "Treten Sie einer Plattform bei, die Fairness, Transparenz und Gemeinschaftseinfluss priorisiert."
-        },
-        {
-          number: "6",
-          title: "Passen Sie Ihre Erfahrung an",
-          description: "Sie entscheiden, wann, wo und welche Art von Angeboten Sie erhalten möchten."
-        }
-      ],
-      getEarlyAccess: 'Frühen Zugang erhalten',
-      firstName: 'Vorname',
-      email: 'E-Mail',
-      firstNamePlaceholder: 'Vorname',
-      emailPlaceholder: 'E-Mail',
-      notRobot: 'Ich bin kein Roboter',
-      joinWaitlistBtn: 'Zur Warteliste beitreten',
-      successMessage: 'Erfolgreich eingereicht!',
-      securePrivate: 'Sicher und privat',
-      earlyAccessBenefits: 'Früher Zugang Vorteile',
-      additionalInfo: 'Seien Sie unter den Ersten, die smarteres Speisen erleben. Kein Spam, nur exklusiver früher Zugang.'
+    if (reduceMotion) {
+      setHeroVisible(true);
+      return undefined;
     }
-  };
 
-  const currentContent = content[currentLanguage] || content.US;
-  const benefits = currentContent.benefits;
+    const timer = window.setTimeout(() => setHeroVisible(true), 70);
+    return () => window.clearTimeout(timer);
+  }, []);
 
-  const benefitIcons = [Gift, Users, Star, Shield, Utensils, MapPin];
+  useEffect(() => {
+    const elements = document.querySelectorAll('.customer-reveal');
+
+    if (!('IntersectionObserver' in window)) {
+      elements.forEach((element) => element.classList.add('is-visible'));
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
+    );
+
+    elements.forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
+  }, [currentLanguage]);
+
+  const heroTransition =
+    'transition-[opacity,transform] duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none';
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-6xl mx-auto px-6 py-20">
-        {/* Header Section */}
-        <div className="text-center mb-20">
-          {/* Early Access Badge */}
-          <div className="inline-flex items-center px-6 py-3 bg-orange-100 border border-orange-200 rounded-full mb-12">
-            <Sparkles className="w-5 h-5 text-orange-600 mr-3" />
-            <span className="text-orange-700 font-semibold text-sm">{currentContent.earlyAccess}</span>
-            <div className="w-2 h-2 bg-green-500 rounded-full ml-3"></div>
-          </div>
+    <main className="overflow-hidden bg-[#fffdf9] text-[#101923] antialiased">
+      <section className="relative overflow-hidden bg-[#101923] px-6 pt-16 text-white lg:pt-20">
+        <div
+          className={`pointer-events-none absolute -right-40 -top-40 h-[42rem] w-[42rem] rounded-full bg-[#ff6b22]/10 blur-3xl transition-opacity duration-[1400ms] motion-reduce:transition-none ${
+            heroVisible ? 'opacity-100' : 'opacity-0'
+          }`}
+        />
 
-
-          {/* Download Now */}
-          <p className="text-4xl md:text-5xl font-bold text-orange-600 mb-6">
-            {currentContent.joinWaitlist}
-          </p>
-
-          {/* Subtitle */}
-          <p className="text-lg text-gray-600 mb-12 max-w-2xl mx-auto">
-            Join thousands who are already transforming their dining experience
-          </p>
-
-          {/* Store Badges - Same Size */}
-          <div className="flex items-center justify-center gap-6 mb-12">
-            <a
-              href="https://apps.apple.com/app/id6749490375"
-              className="transition-all duration-300 transform hover:scale-105"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Download on the App Store"
+        <div className="relative mx-auto grid max-w-7xl items-center gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:gap-14">
+          <div className="pb-14 lg:pb-20">
+            <p
+              className={`mb-5 text-[10px] font-bold uppercase tracking-[0.18em] text-[#ff9b5e] ${heroTransition} ${
+                heroVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+              }`}
+              style={{ transitionDelay: heroVisible ? '70ms' : '0ms' }}
             >
-              <div className="bg-black text-white rounded-xl flex items-center justify-center w-52 h-16 px-4">
-                <img src={appStoreBadge} alt="App Store" className="h-8 w-auto mr-3" />
-                <div className="text-left">
-                  <div className="text-xs opacity-80 leading-none">Download on the</div>
-                  <div className="text-xl font-bold leading-none mt-1">App Store</div>
-                </div>
-              </div>
-            </a>
-            
-            <div className="relative">
-              <div className="bg-gray-400 text-white rounded-xl flex items-center justify-center w-52 h-16 px-4 cursor-not-allowed opacity-60">
-                <img src={playStoreBadge} alt="Google Play" className="h-8 w-auto mr-3 opacity-50" />
-                <div className="text-left">
-                  <div className="text-xs opacity-80 leading-none">GET IT ON</div>
-                  <div className="text-xl font-bold leading-none mt-1">Google Play</div>
-                </div>
-              </div>
-              <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
-                <span className="text-sm font-semibold text-orange-600">Coming Soon for Android</span>
+              {t.label}
+            </p>
+
+            <h1
+              className={`max-w-2xl text-5xl font-semibold leading-[0.96] tracking-[-0.06em] md:text-6xl lg:text-7xl ${heroTransition} ${
+                heroVisible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
+              }`}
+              style={{ transitionDelay: heroVisible ? '150ms' : '0ms' }}
+            >
+              {t.title1}
+              <br />
+              <span className="text-[#ff6b22]">{t.title2}</span>
+            </h1>
+
+            <p
+              className={`mt-6 max-w-xl text-sm leading-7 text-white/55 md:text-base ${heroTransition} ${
+                heroVisible ? 'translate-y-0 opacity-100' : 'translate-y-5 opacity-0'
+              }`}
+              style={{ transitionDelay: heroVisible ? '270ms' : '0ms' }}
+            >
+              {t.description}
+            </p>
+
+            <div
+              className={`mt-7 flex flex-col gap-3 sm:flex-row sm:items-center ${heroTransition} ${
+                heroVisible ? 'translate-y-0 opacity-100' : 'translate-y-5 opacity-0'
+              }`}
+              style={{ transitionDelay: heroVisible ? '380ms' : '0ms' }}
+            >
+              <a
+                href="https://apps.apple.com/app/id6749490375"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex h-14 w-48 items-center justify-center rounded-xl bg-white px-4 text-[#101923] shadow-[0_14px_35px_rgba(0,0,0,0.18)] transition-all duration-300 hover:-translate-y-0.5"
+                aria-label="Download Dinery on the App Store"
+              >
+                <img src={appStoreBadge} alt="" className="mr-3 h-8 w-auto" />
+                <span className="text-left">
+                  <span className="block text-[10px] leading-none opacity-55">
+                    {t.appStoreTop}
+                  </span>
+                  <span className="mt-1 block text-lg font-bold leading-none">
+                    {t.appStore}
+                  </span>
+                </span>
+                <ArrowUpRight className="ml-2 h-4 w-4 opacity-45 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </a>
+
+              <div
+                className="flex h-14 w-48 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] px-4 text-white/40"
+                aria-label={`${t.playStore} ${t.comingSoon}`}
+              >
+                <img
+                  src={playStoreBadge}
+                  alt=""
+                  className="mr-3 h-8 w-auto opacity-35"
+                />
+                <span className="text-left">
+                  <span className="block text-[10px] leading-none">{t.comingSoon}</span>
+                  <span className="mt-1 block text-lg font-bold leading-none">
+                    {t.playStore}
+                  </span>
+                </span>
               </div>
             </div>
-          </div>
 
-          {/* Description Box */}
-          <div className="max-w-4xl mx-auto bg-white rounded-3xl p-8 border border-gray-200 shadow-lg mt-16">
-            <p className="text-xl text-gray-700 leading-relaxed">
-              {currentContent.description}
+            <p
+              className={`mt-4 text-[11px] text-white/35 ${heroTransition} ${
+                heroVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+              }`}
+              style={{ transitionDelay: heroVisible ? '470ms' : '0ms' }}
+            >
+              {t.note}
             </p>
           </div>
-        </div>
 
-        {/* Benefits Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
-          {benefits.map((benefit, index) => {
-            const IconComponent = benefitIcons[index];
-            return (
-              <div key={index} className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-start space-x-4 mb-4">
-                  <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <span className="text-white font-bold text-lg">{benefit.number}</span>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-gray-900 mb-3 italic">{benefit.title}</h3>
-                  </div>
-                </div>
-                <p className="text-gray-600 leading-relaxed">{benefit.description}</p>
-              </div>
-            );
-          })}
+          <div
+            className={`relative mx-auto h-[350px] w-full max-w-lg overflow-hidden sm:h-[410px] lg:h-[470px] transition-[opacity,transform] duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
+              heroVisible
+                ? 'translate-y-0 scale-100 opacity-100'
+                : 'translate-y-8 scale-[0.97] opacity-0'
+            }`}
+            style={{ transitionDelay: heroVisible ? '220ms' : '0ms' }}
+          >
+            <div className="pointer-events-none absolute left-1/2 top-8 h-[30rem] w-[30rem] -translate-x-1/2 rounded-full border border-[#ff6b22]/15" />
+            <div className="pointer-events-none absolute left-1/2 top-24 h-[23rem] w-[23rem] -translate-x-1/2 rounded-full bg-[#ff6b22]/10 blur-3xl" />
+            <img
+              src={dineryApp}
+              alt="Upper half of the Dinery iOS app"
+              className="absolute left-1/2 top-4 h-auto w-[280px] -translate-x-1/2 object-contain drop-shadow-[0_26px_34px_rgba(0,0,0,0.32)] sm:w-[330px] lg:w-[380px]"
+            />
+          </div>
         </div>
+      </section>
 
-        {/* Additional Info */}
-        <div className="text-center mt-16">
-          <p className="text-gray-600 text-lg">
-            {currentContent.additionalInfo}
-          </p>
+      <section className="px-6 py-16 lg:py-20">
+        <div className="mx-auto max-w-7xl">
+          <div className="customer-reveal max-w-2xl">
+            <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.18em] text-[#ff6b22]">
+              {t.sectionLabel}
+            </p>
+            <h2 className="text-4xl font-semibold leading-[1.04] tracking-[-0.05em] md:text-5xl">
+              {t.sectionTitle}
+            </h2>
+          </div>
+
+          <div className="mt-10 grid gap-4 md:grid-cols-3">
+            {t.benefits.map((benefit, index) => {
+              const Icon = benefitIcons[index];
+              return (
+                <article
+                  key={benefit.title}
+                  className="customer-reveal group rounded-2xl border border-black/[0.07] bg-[#f6f1e9] p-6 transition-[opacity,transform,box-shadow] hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(16,25,35,0.08)]"
+                  style={{ transitionDelay: `${index * 90}ms` }}
+                >
+                  <span className="grid h-11 w-11 place-items-center rounded-xl bg-white text-[#ff6b22] shadow-sm transition-transform duration-300 group-hover:scale-105">
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <h3 className="mt-6 text-lg font-bold">{benefit.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-black/50">
+                    {benefit.description}
+                  </p>
+                </article>
+              );
+            })}
+          </div>
         </div>
-      </div>
-    </div>
+      </section>
+
+      <style>{`
+        .customer-reveal {
+          opacity: 0;
+          transform: translateY(28px);
+          transition-duration: 800ms;
+          transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .customer-reveal.is-visible {
+          opacity: 1;
+          transform: translateY(0);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .customer-reveal,
+          .customer-reveal.is-visible {
+            opacity: 1;
+            transform: none;
+            transition: none;
+          }
+        }
+      `}</style>
+    </main>
   );
 };
 

@@ -1,10 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import samuliImg from '../assets/samuli.png';
 import { useLanguage } from '../App';
 
 const FounderStory = () => {
   const [activeTab, setActiveTab] = useState(0);
   const { currentLanguage } = useLanguage();
+  const [heroVisible, setHeroVisible] = useState(false);
+
+  useEffect(() => {
+    const reduceMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
+
+    if (reduceMotion) {
+      setHeroVisible(true);
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => setHeroVisible(true), 70);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const elements = document.querySelectorAll('.founder-reveal');
+
+    if (!('IntersectionObserver' in window)) {
+      elements.forEach((element) => element.classList.add('is-visible'));
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
+    );
+
+    elements.forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
+  }, [currentLanguage]);
 
   const content = {
     US: {
@@ -255,19 +294,22 @@ const FounderStory = () => {
 
   const currentContent = content[currentLanguage] || content.US;
 
+  const heroTransition =
+    'transition-[opacity,transform] duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none';
+
   return (
-    <div className="min-h-screen bg-white">
+    <main className="min-h-screen overflow-hidden bg-[#0b1018] text-white">
       {/* Compact Hero */}
-      <section className="relative py-16 px-6 bg-gradient-to-br from-orange-50 via-white to-orange-100 overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-orange-200 rounded-full blur-3xl opacity-30"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-orange-300 rounded-full blur-3xl opacity-20"></div>
+      <section className="relative overflow-hidden border-b border-white/[0.07] px-6 py-12 lg:py-14">
+        <div className="absolute right-0 top-0 h-80 w-80 rounded-full bg-orange-500/15 blur-3xl"></div>
+        <div className="absolute bottom-0 left-1/4 h-64 w-64 rounded-full bg-amber-300/10 blur-3xl"></div>
         
-        <div className="max-w-6xl mx-auto relative">
-          <div className="grid md:grid-cols-5 gap-12 items-center">
-            <div className="md:col-span-2 flex justify-center">
+        <div className="relative mx-auto max-w-6xl">
+          <div className="grid items-center gap-8 md:grid-cols-5 lg:gap-12">
+            <div className="flex justify-center md:col-span-2">
               <div className="relative">
-                <div className="absolute -inset-3 bg-gradient-to-r from-orange-400 to-orange-600 rounded-full blur-xl opacity-30"></div>
-                <div className="relative w-56 h-56 rounded-full overflow-hidden border-4 border-white shadow-2xl">
+                <div className="absolute -inset-3 rounded-[32px] bg-gradient-to-r from-orange-400 to-orange-600 opacity-25 blur-xl"></div>
+                <div className="relative h-56 w-56 overflow-hidden rounded-[28px] border border-white/15 shadow-2xl sm:h-64 sm:w-64">
                   <img
                     src={samuliImg}
                     alt="Samuli Mikkola"
@@ -278,17 +320,37 @@ const FounderStory = () => {
             </div>
             
             <div className="md:col-span-3">
-              <div className="inline-block px-4 py-1 bg-orange-500 text-white rounded-full text-sm font-semibold mb-4">
+              <div 
+                className={`mb-4 inline-block rounded-full border border-orange-400/20 bg-orange-400/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-orange-300 ${heroTransition} ${
+                  heroVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+                }`}
+                style={{ transitionDelay: heroVisible ? '70ms' : '0ms' }}
+              >
                 {currentContent.title}
               </div>
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-3 leading-tight">
+              <h1 
+                className={`mb-4 text-3xl font-semibold leading-tight tracking-[-0.04em] text-white md:text-5xl ${heroTransition} ${
+                  heroVisible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
+                }`}
+                style={{ transitionDelay: heroVisible ? '150ms' : '0ms' }}
+              >
                 {currentContent.subtitle}
               </h1>
-              <div className="mb-4">
-                <h2 className="text-2xl font-bold text-gray-900">{currentContent.founderName}</h2>
-                <p className="text-lg text-orange-500 font-semibold">{currentContent.founderTitle}</p>
+              <div 
+                className={`mb-4 ${heroTransition} ${
+                  heroVisible ? 'translate-y-0 opacity-100' : 'translate-y-5 opacity-0'
+                }`}
+                style={{ transitionDelay: heroVisible ? '220ms' : '0ms' }}
+              >
+                <h2 className="text-xl font-semibold text-white">{currentContent.founderName}</h2>
+                <p className="text-sm font-semibold text-orange-400">{currentContent.founderTitle}</p>
               </div>
-              <p className="text-gray-600 leading-relaxed">
+              <p 
+                className={`max-w-xl text-sm leading-6 text-slate-400 sm:text-base ${heroTransition} ${
+                  heroVisible ? 'translate-y-0 opacity-100' : 'translate-y-5 opacity-0'
+                }`}
+                style={{ transitionDelay: heroVisible ? '300ms' : '0ms' }}
+              >
                 {currentContent.founderIntro}
               </p>
             </div>
@@ -297,23 +359,23 @@ const FounderStory = () => {
       </section>
 
       {/* Tabbed Timeline */}
-      <section className="py-16 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-900 mb-3">{currentContent.theJourney}</h2>
-            <div className="w-20 h-1 bg-orange-500 mx-auto"></div>
+      <section className="px-6 py-10 lg:py-12">
+        <div className="mx-auto max-w-6xl">
+          <div className="founder-reveal mb-6 text-center">
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-orange-400">From insight to platform</p>
+            <h2 className="text-3xl font-semibold tracking-tight text-white">{currentContent.theJourney}</h2>
           </div>
 
           {/* Tab Navigation */}
-          <div className="flex flex-wrap justify-center gap-3 mb-8">
+          <div className="founder-reveal mb-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
             {currentContent.timeline.map((item, index) => (
               <button
                 key={index}
                 onClick={() => setActiveTab(index)}
-                className={`px-6 py-3 rounded-full font-semibold transition-all duration-300 ${
+                className={`rounded-xl px-3 py-2.5 text-xs font-semibold transition-all duration-300 sm:text-sm ${
                   activeTab === index
-                    ? 'bg-orange-500 text-white shadow-lg'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'bg-orange-500 text-white shadow-lg shadow-orange-950/30'
+                    : 'border border-white/[0.08] bg-white/[0.04] text-slate-400 hover:bg-white/[0.07] hover:text-white'
                 }`}
               >
                 {item.title.split(':')[0]}
@@ -322,17 +384,17 @@ const FounderStory = () => {
           </div>
 
           {/* Tab Content */}
-          <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 border border-gray-100">
-            <div className="max-w-3xl mx-auto">
-              <h3 className="text-3xl font-bold text-gray-900 mb-6">
+          <div className="founder-reveal rounded-[24px] border border-white/[0.09] bg-white/[0.045] p-5 shadow-xl sm:p-7">
+            <div className="mx-auto max-w-4xl">
+              <h3 className="mb-3 text-2xl font-semibold text-white">
                 {currentContent.timeline[activeTab].title}
               </h3>
-              <p className="text-lg text-gray-700 leading-relaxed mb-6">
+              <p className="mb-4 text-sm leading-6 text-slate-400 sm:text-base">
                 {currentContent.timeline[activeTab].content}
               </p>
               {currentContent.timeline[activeTab].quote && (
-                <div className="bg-orange-50 border-l-4 border-orange-500 p-6 rounded-r-xl">
-                  <p className="text-xl italic text-gray-800">
+                <div className="rounded-r-xl border-l-2 border-orange-400 bg-orange-500/10 p-4">
+                  <p className="text-base italic leading-6 text-orange-100">
                     {currentContent.timeline[activeTab].quote}
                   </p>
                 </div>
@@ -343,22 +405,21 @@ const FounderStory = () => {
       </section>
 
       {/* Quote Section */}
-      <section className="py-16 px-6 bg-gradient-to-br from-gray-900 to-gray-800">
-        <div className="max-w-4xl mx-auto text-center text-white">
-          <div className="text-6xl text-orange-400 mb-4">"</div>
-          <p className="text-2xl md:text-3xl font-medium leading-relaxed mb-6">
-            {currentContent.mainQuote}
-          </p>
-          <p className="text-xl text-orange-400 font-semibold">{currentContent.quoteAuthor}</p>
-        </div>
-      </section>
+      <section className="border-y border-white/[0.07] bg-white/[0.025] px-6 py-10 lg:py-12">
+        <div className="mx-auto grid max-w-6xl gap-4 lg:grid-cols-2">
+          <div className="founder-reveal rounded-[24px] border border-white/[0.08] bg-white/[0.04] p-6 text-left text-white sm:p-8">
+            <div className="mb-2 text-4xl leading-none text-orange-400">“</div>
+            <p className="text-lg font-medium leading-7 sm:text-xl">
+              {currentContent.mainQuote}
+            </p>
+            <p className="mt-4 text-sm font-semibold text-orange-400">{currentContent.quoteAuthor}</p>
+          </div>
 
-      {/* Dinery Birth */}
-      <section className="py-16 px-6">
-        <div className="max-w-5xl mx-auto">
-          <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-3xl p-10 md:p-12 text-white text-center shadow-2xl">
-            <h3 className="text-4xl font-bold mb-6">{currentContent.dineryBorn}</h3>
-            <p className="text-xl leading-relaxed opacity-95">
+          {/* Dinery Birth */}
+          <div className="founder-reveal rounded-[24px] bg-gradient-to-br from-orange-500 to-orange-600 p-6 text-white shadow-2xl sm:p-8">
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-orange-100/70">The turning point</p>
+            <h3 className="mb-4 text-3xl font-semibold">{currentContent.dineryBorn}</h3>
+            <p className="text-sm leading-6 text-orange-50/90 sm:text-base">
               {currentContent.dineryDescription}
             </p>
           </div>
@@ -366,27 +427,30 @@ const FounderStory = () => {
       </section>
 
       {/* Vision Section */}
-      <section className="py-16 px-6 bg-gray-50">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-12 items-start">
+      <section className="px-6 py-10 lg:py-12">
+        <div className="mx-auto max-w-6xl">
+          <div className="grid items-start gap-6 md:grid-cols-[1.35fr_.65fr]">
             <div>
-              <h2 className="text-4xl font-bold text-gray-900 mb-6">{currentContent.theVision}</h2>
-              <div className="space-y-5 text-lg text-gray-700 leading-relaxed">
+              <p className="founder-reveal mb-2 text-xs font-bold uppercase tracking-[0.2em] text-orange-400">What comes next</p>
+              <h2 className="founder-reveal mb-4 text-3xl font-semibold text-white">{currentContent.theVision}</h2>
+              <div className="space-y-3 text-sm leading-6 text-slate-400 sm:text-base">
                 {currentContent.visionContent.map((paragraph, index) => (
-                  <p key={index}>{paragraph}</p>
+                  <p key={index} className="founder-reveal" style={{ transitionDelay: `${index * 100}ms` }}>
+                    {paragraph}
+                  </p>
                 ))}
               </div>
             </div>
             
-            <div className="bg-white rounded-2xl shadow-xl p-10">
+            <div className="founder-reveal rounded-[24px] border border-white/[0.09] bg-white/[0.045] p-6 shadow-xl">
               <div className="text-center">
-                <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-                  <span className="text-white text-3xl font-bold">∞</span>
+                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-400 to-orange-600 shadow-lg">
+                  <span className="text-2xl font-bold text-white">∞</span>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                <h3 className="mb-3 text-xl font-semibold text-white">
                   {currentContent.creatingValue}
                 </h3>
-                <p className="text-gray-600 text-lg leading-relaxed">
+                <p className="text-sm leading-6 text-slate-400">
                   {currentContent.valueDescription}
                 </p>
               </div>
@@ -394,7 +458,30 @@ const FounderStory = () => {
           </div>
         </div>
       </section>
-    </div>
+
+      <style>{`
+        .founder-reveal {
+          opacity: 0;
+          transform: translateY(28px);
+          transition-duration: 800ms;
+          transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .founder-reveal.is-visible {
+          opacity: 1;
+          transform: translateY(0);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .founder-reveal,
+          .founder-reveal.is-visible {
+            opacity: 1;
+            transform: none;
+            transition: none;
+          }
+        }
+      `}</style>
+    </main>
   );
 };
 

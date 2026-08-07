@@ -1,11 +1,54 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Calendar, User } from 'lucide-react';
 import { useLanguage } from '../App';
 import dineryLogo from '../assets/dinery-logo.png';
+import newsImage3 from '../assets/image3.png';
+import newsImage4 from '../assets/image4.png';
+
+const NEWS_IMAGES = [newsImage3, newsImage4];
 
 const LatestNews = () => {
   const { currentLanguage } = useLanguage();
   const [selectedArticle, setSelectedArticle] = useState(null);
+  const [heroVisible, setHeroVisible] = useState(false);
+
+  useEffect(() => {
+    const reduceMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
+
+    if (reduceMotion) {
+      setHeroVisible(true);
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => setHeroVisible(true), 70);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const elements = document.querySelectorAll('.news-reveal');
+
+    if (!('IntersectionObserver' in window)) {
+      elements.forEach((element) => element.classList.add('is-visible'));
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
+    );
+
+    elements.forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
+  }, [currentLanguage]);
 
   const content = {
     US: {
@@ -197,30 +240,34 @@ const LatestNews = () => {
   const currentContent = content[currentLanguage] || content.US;
   const articles = currentContent.articles;
 
+  const heroTransition =
+    'transition-[opacity,transform] duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none';
+
   if (selectedArticle) {
     const article = articles.find(a => a.id === selectedArticle);
     return (
-      <div className="min-h-screen bg-white">
+      <main className="min-h-screen bg-[#0b1018] text-white">
         {/* Article Header */}
-        <div className="bg-gradient-to-br from-orange-50 to-white py-12 px-6">
-          <div className="max-w-4xl mx-auto">
+        <div className="border-b border-white/[0.07] bg-white/[0.025] px-6 py-9 lg:py-12">
+          <div className="mx-auto max-w-4xl">
             <button 
               onClick={() => setSelectedArticle(null)} 
-              className="flex items-center text-orange-500 hover:text-orange-600 mb-8 text-lg font-medium transition-colors"
+              className="mb-6 flex items-center text-sm font-semibold text-orange-400 transition-colors hover:text-orange-300"
             >
-              <ArrowLeft className="w-5 h-5 mr-2" />
+              <ArrowLeft className="mr-2 h-4 w-4" />
               {currentContent.backToNews}
             </button>
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+            <span className="mb-3 inline-flex rounded-full border border-orange-400/20 bg-orange-400/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-orange-300">Dinery journal</span>
+            <h1 className="mb-5 max-w-3xl text-3xl font-semibold leading-tight tracking-[-0.04em] text-white md:text-5xl">
               {article.title}
             </h1>
-            <div className="flex items-center space-x-6 text-gray-600">
+            <div className="flex flex-wrap items-center gap-5 text-xs text-slate-400">
               <div className="flex items-center space-x-2">
-                <Calendar className="w-5 h-5" />
+                <Calendar className="h-4 w-4 text-orange-400" />
                 <span>{article.date}</span>
               </div>
               <div className="flex items-center space-x-2">
-                <User className="w-5 h-5" />
+                <User className="h-4 w-4 text-orange-400" />
                 <span>{article.author}</span>
               </div>
             </div>
@@ -228,68 +275,84 @@ const LatestNews = () => {
         </div>
         
         {/* Article Content */}
-        <div className="py-16 px-6">
-          <div className="max-w-4xl mx-auto">
-            <div className="prose prose-lg max-w-none text-gray-700">
+        <div className="px-6 py-10 lg:py-12">
+          <div className="mx-auto max-w-3xl">
+            <div className="prose prose-lg prose-invert max-w-none prose-headings:font-semibold prose-headings:tracking-tight prose-headings:text-white prose-p:leading-8 prose-p:text-slate-300 prose-strong:text-white prose-li:text-slate-300 prose-a:text-orange-400">
               <div dangerouslySetInnerHTML={{ __html: article.content }} />
             </div>
           </div>
         </div>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <main className="min-h-screen overflow-hidden bg-[#0b1018] text-white">
       {/* Compact Header */}
-      <section className="py-16 px-6 bg-gradient-to-br from-orange-50 via-white to-orange-100 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-orange-200 rounded-full blur-3xl opacity-20"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-orange-300 rounded-full blur-3xl opacity-15"></div>
+      <section className="relative overflow-hidden border-b border-white/[0.07] px-6 py-12 lg:py-14">
+        <div className="absolute right-0 top-0 h-80 w-80 rounded-full bg-orange-500/15 blur-3xl"></div>
+        <div className="absolute bottom-0 left-1/4 h-64 w-64 rounded-full bg-amber-300/10 blur-3xl"></div>
         
-        <div className="max-w-5xl mx-auto text-center relative">
-          <div className="inline-block px-4 py-1 bg-orange-500 text-white rounded-full text-sm font-semibold mb-4">
+        <div className="relative mx-auto max-w-5xl text-center">
+          <div 
+            className={`mb-3 inline-block rounded-full border border-orange-400/20 bg-orange-400/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-orange-300 ${heroTransition} ${
+              heroVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+            }`}
+            style={{ transitionDelay: heroVisible ? '70ms' : '0ms' }}
+          >
             News & Updates
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          <h1 
+            className={`mb-3 text-3xl font-semibold tracking-[-0.04em] text-white md:text-5xl ${heroTransition} ${
+              heroVisible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
+            }`}
+            style={{ transitionDelay: heroVisible ? '150ms' : '0ms' }}
+          >
             {currentContent.title}
           </h1>
-          <div className="w-20 h-1 bg-orange-500 mx-auto mb-6"></div>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+          <p 
+            className={`mx-auto max-w-2xl text-sm leading-6 text-slate-400 sm:text-base ${heroTransition} ${
+              heroVisible ? 'translate-y-0 opacity-100' : 'translate-y-5 opacity-0'
+            }`}
+            style={{ transitionDelay: heroVisible ? '270ms' : '0ms' }}
+          >
             {currentContent.subtitle}
           </p>
         </div>
       </section>
 
       {/* Compact News Grid */}
-      <section className="py-16 px-6">
-        <div className="max-w-5xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-8">
-            {articles.map((article) => (
+      <section className="px-6 py-10 lg:py-12">
+        <div className="mx-auto max-w-6xl">
+          <div className="grid gap-4 md:grid-cols-2">
+            {articles.map((article, index) => (
               <article 
                 key={article.id} 
-                className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                className="news-reveal group overflow-hidden rounded-[24px] border border-white/[0.09] bg-white/[0.045] shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-orange-400/25"
+                style={{ transitionDelay: `${index * 120}ms` }}
               >
-                <div className="w-full h-48 bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center relative overflow-hidden">
-                  <div className="absolute inset-0 bg-black opacity-5"></div>
+                <div className="relative h-48 w-full overflow-hidden">
+                  <img src={NEWS_IMAGES[index % NEWS_IMAGES.length]} alt="" className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0b1018] via-[#0b1018]/15 to-transparent"></div>
                   <img 
                     src={dineryLogo} 
                     alt="Dinery.ai Logo" 
-                    className="w-24 h-24 object-contain relative z-10" 
+                    className="absolute bottom-4 left-4 z-10 h-10 w-10 rounded-xl border border-white/15 bg-black/35 object-contain p-1.5 backdrop-blur" 
                   />
                 </div>
                 
-                <div className="p-6">
-                  <h2 className="text-xl font-bold text-gray-900 mb-3 leading-tight">
+                <div className="p-5 sm:p-6">
+                  <h2 className="mb-3 text-xl font-semibold leading-tight text-white">
                     {article.title}
                   </h2>
-                  <p className="text-gray-600 mb-4 text-sm leading-relaxed">
+                  <p className="mb-4 text-sm leading-6 text-slate-400">
                     {article.excerpt}
                   </p>
-                  <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                    <div className="text-xs text-gray-500">{article.date}</div>
+                  <div className="flex items-center justify-between border-t border-white/[0.07] pt-4">
+                    <div className="text-xs text-slate-500">{article.date}</div>
                     <button 
                       onClick={() => setSelectedArticle(article.id)} 
-                      className="text-orange-500 hover:text-orange-600 font-semibold text-sm transition-colors"
+                      className="text-sm font-semibold text-orange-400 transition-colors hover:text-orange-300"
                     >
                       {currentContent.readMore} →
                     </button>
@@ -300,7 +363,30 @@ const LatestNews = () => {
           </div>
         </div>
       </section>
-    </div>
+
+      <style>{`
+        .news-reveal {
+          opacity: 0;
+          transform: translateY(28px);
+          transition-duration: 800ms;
+          transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .news-reveal.is-visible {
+          opacity: 1;
+          transform: translateY(0);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .news-reveal,
+          .news-reveal.is-visible {
+            opacity: 1;
+            transform: none;
+            transition: none;
+          }
+        }
+      `}</style>
+    </main>
   );
 };
 

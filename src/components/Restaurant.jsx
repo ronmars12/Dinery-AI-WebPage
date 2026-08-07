@@ -1,9 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Check, X, Star, Users, TrendingUp, BarChart3, Zap, Shield, ArrowRight, Clock, Target, Award, DollarSign, Eye, Bell, LineChart, Headphones, UserCheck, Video, TestTube, Calculator } from 'lucide-react';
+import { Check, X, Star, Users, Utensils, TrendingUp, BarChart3, Zap, Shield, ArrowRight, Clock, Target, Award, DollarSign, Eye, Bell, LineChart, Headphones, UserCheck, Video, TestTube, Calculator } from 'lucide-react';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { getFirestore, collection, addDoc, serverTimestamp, getDocs } from 'firebase/firestore';
 import { app } from '../../firebaseConfig';
 import ReCAPTCHA from "react-google-recaptcha";
+import dashboard from '../assets/dashboard.png';
+
+// Sample editorial photography from Unsplash. Replace these URLs with your own
+// optimized local assets before production if you want full asset control.
+const RESTAURANT_INTERIOR_IMAGE =
+  'https://images.unsplash.com/photo-1718578061045-b17fe1dbbd77?auto=format&fit=crop&w=1800&q=82';
+const CHEF_PLATING_IMAGE =
+  'https://images.unsplash.com/photo-1661505300193-888ac62fca4d?auto=format&fit=crop&w=1400&q=82';
+const MODERN_RESTAURANT_IMAGE =
+  'https://images.unsplash.com/photo-1770816307690-41da2ad9f384?auto=format&fit=crop&w=1400&q=82';
 
 // Add a safe useLanguage hook with fallback
 const useLanguage = () => {
@@ -29,11 +39,11 @@ const RestaurantCalculatorSection = () => {
 // ---- Translations
 const content = {
   US: {
-    heroBadge: 'Revenue-Generating Platform',
-    heroH1a: 'Turn Empty Tables',
-    heroH1b: 'Into Full Ones',
-    heroDesc: "This is not simply software. This is a revenue-generating platform that fills your restaurant without the crushing commissions.",
-    ctaStart: 'Start Growing Revenue Today',
+    heroBadge: 'Restaurant Partner Platform',
+    heroH1a: 'Run Your Restaurant',
+    heroH1b: 'From One Place',
+    heroDesc: 'Dinery brings offers, reservations, customer relationships, tables, and daily operations into one connected workspace.',
+    ctaStart: 'Create Restaurant Account',
     ctaDemo: 'Watch Demo',
     ctaTest: 'Request Test Account',
     howTitle: 'How It Works',
@@ -90,6 +100,54 @@ const content = {
   },
   // Other languages omitted for brevity - keep your existing translations
 };
+
+const dashboardFeatures = [
+  {
+    icon: BarChart3,
+    title: 'Analytics',
+    description: 'Review the activity that matters from one clear overview.',
+  },
+  {
+    icon: Utensils,
+    title: 'Restaurant',
+    description: 'Keep restaurant details and the guest-facing profile current.',
+  },
+  {
+    icon: Zap,
+    title: 'Offers',
+    description: 'Create, schedule, update, or pause restaurant-led offers.',
+  },
+  {
+    icon: Users,
+    title: 'CRM',
+    description: 'Organize guest relationships and relevant customer information.',
+  },
+  {
+    icon: Clock,
+    title: 'Reservation Software',
+    description: 'Manage bookings, availability, and daily reservation flow.',
+  },
+  {
+    icon: Target,
+    title: 'Table Management',
+    description: 'Arrange tables and keep seating capacity easy to understand.',
+  },
+  {
+    icon: ArrowRight,
+    title: 'Reservation Link',
+    description: 'Share a direct booking link across your website and channels.',
+  },
+  {
+    icon: UserCheck,
+    title: 'Timesheet',
+    description: 'Keep staff working-time information organized in one place.',
+  },
+  {
+    icon: Shield,
+    title: 'Account Settings',
+    description: 'Control account information, preferences, and access settings.',
+  },
+];
 
 const RestaurantOnboarding = () => {
   const { currentLanguage } = useLanguage();
@@ -582,6 +640,30 @@ const RestaurantOnboarding = () => {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    const elements = document.querySelectorAll('.restaurant-reveal');
+
+    if (!('IntersectionObserver' in window)) {
+      elements.forEach((element) => element.classList.add('is-visible'));
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.14, rootMargin: '0px 0px -40px 0px' }
+    );
+
+    elements.forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
+  }, []);
+
   const steps = t.steps.map((s, i) => ({
     number: i + 1,
     title: s.title,
@@ -634,69 +716,67 @@ const RestaurantOnboarding = () => {
   }));
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen overflow-hidden bg-[#fffdf9] text-[#101923] antialiased">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white py-24 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 to-transparent"></div>
-        <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className={`text-center transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-            <div className="inline-block bg-orange-500/10 backdrop-blur-sm border border-orange-500/20 rounded-full px-6 py-2 mb-8">
-              <span className="text-orange-400 font-medium">{t.heroBadge}</span>
+      <section className="relative overflow-hidden bg-[#101923] px-6 py-16 text-white lg:py-20">
+        <div className={`absolute -right-28 -top-28 h-[40rem] w-[40rem] rounded-full bg-[#ff6b22]/10 blur-3xl transition-opacity duration-[1400ms] motion-reduce:transition-none ${isVisible ? 'opacity-100' : 'opacity-0'}`} />
+        <div className="relative mx-auto grid max-w-[1500px] items-center gap-12 lg:grid-cols-[0.78fr_1.22fr] lg:gap-12">
+          <div>
+            <div
+              className={`mb-6 inline-flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.17em] text-[#ff9b5e] transition-[opacity,transform] duration-[850ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
+              style={{ transitionDelay: isVisible ? '70ms' : '0ms' }}
+            >
+              <span className="h-2 w-2 rounded-full bg-[#ff6b22] shadow-[0_0_0_6px_rgba(255,107,34,0.12)]" />
+              {t.heroBadge}
             </div>
-            
-            <h1 className="text-5xl md:text-7xl font-bold mb-8 leading-tight">
-              <span className="bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                {t.heroH1a}
-              </span>
-              <br />
-              <span className="bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
-                {t.heroH1b}
-              </span>
+            <h1
+              className={`text-5xl font-semibold leading-[0.94] tracking-[-0.065em] transition-[opacity,transform] duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none md:text-6xl lg:text-7xl ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}
+              style={{ transitionDelay: isVisible ? '150ms' : '0ms' }}
+            >
+              {t.heroH1a}<br /><span className="text-[#ff6b22]">{t.heroH1b}</span>
             </h1>
-            
-            <p className="text-xl md:text-2xl mb-12 text-gray-300 max-w-4xl mx-auto leading-relaxed">
+            <p
+              className={`mt-6 max-w-xl text-base leading-8 text-white/58 transition-[opacity,transform] duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none md:text-lg ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-5 opacity-0'}`}
+              style={{ transitionDelay: isVisible ? '270ms' : '0ms' }}
+            >
               {t.heroDesc}
             </p>
-            
-                <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+            <div
+              className={`mt-8 flex flex-wrap items-center gap-3 transition-[opacity,transform] duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-5 opacity-0'}`}
+              style={{ transitionDelay: isVisible ? '380ms' : '0ms' }}
+            >
                 <button
                   onClick={() => {
                     setIsTestAccount(false);
                     setShowLeadForm(true);
                   }}
-                  className="group bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-10 py-5 rounded-full font-semibold text-lg shadow-2xl hover:shadow-orange-500/25 transform hover:scale-105 transition-all duration-300"
+                  className="group inline-flex min-h-14 items-center rounded-full bg-[#ff6b22] px-6 text-sm font-bold text-white shadow-[0_14px_36px_rgba(255,107,34,0.25)] transition-transform hover:-translate-y-1"
                 >
                   {t.ctaStart}
                   <ArrowRight className="inline ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </button>
-          
-          {/* NEW: Calculator Link Button */}
-          <button
-            onClick={() => window.location.href = '/calculators'}
-            className="group bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-10 py-5 rounded-full font-semibold text-lg shadow-2xl hover:shadow-purple-500/25 transform hover:scale-105 transition-all duration-300"
+                <button onClick={() => { setIsTestAccount(true); setShowLeadForm(true); }} className="group inline-flex min-h-14 items-center rounded-full border border-white/15 px-6 text-sm font-bold text-white/75 transition-colors hover:bg-white/[0.06] hover:text-white"><TestTube className="mr-2 h-4 w-4" />{t.ctaTest}</button>
+            </div>
+          </div>
+
+          <div
+            className={`relative transition-[opacity,transform] duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none lg:-mr-6 xl:-mr-10 ${isVisible ? 'translate-x-0 scale-100 opacity-100' : 'translate-x-8 scale-[0.98] opacity-0'}`}
+            style={{ transitionDelay: isVisible ? '220ms' : '0ms' }}
           >
-            <Calculator className="inline mr-2 w-5 h-5" />
-            Revenue Calculator
-          </button>
-          
-          <button
-            onClick={() => {
-              setIsTestAccount(true);
-              setShowLeadForm(true);
-            }}
-            className="group bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-10 py-5 rounded-full font-semibold text-lg shadow-2xl hover:shadow-blue-500/25 transform hover:scale-105 transition-all duration-300"
-          >
-            <TestTube className="inline mr-2 w-5 h-5" />
-            {t.ctaTest}
-          </button>
-        </div>
+            <div className="absolute -inset-8 rounded-full border border-[#ff6b22]/15" />
+            <img
+              src={dashboard}
+              alt="Dinery reservation and restaurant management dashboard"
+              className="relative z-10 h-auto w-full object-contain"
+              fetchPriority="high"
+            />
           </div>
         </div>
       </section>
 
+      {/* Legacy long-form marketing sections retained in source but intentionally hidden. */}
+      {false && (
+      <>
       {/* How It Works */}
       <section className="py-24 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -739,6 +819,20 @@ const RestaurantOnboarding = () => {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Sample restaurant story photography */}
+      <section className="bg-[#101923] px-6 py-16 text-white">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-10 grid gap-6 lg:grid-cols-2 lg:items-end">
+            <div><p className="mb-4 text-[10px] font-bold uppercase tracking-[0.18em] text-[#ff9b5e]">BUILT FOR REAL SERVICE</p><h2 className="text-4xl font-semibold leading-[1.02] tracking-[-0.055em] md:text-5xl">From a quiet room to a <span className="text-[#ff6b22]">full service.</span></h2></div>
+            <p className="max-w-xl text-sm leading-7 text-white/50 lg:justify-self-end">Dinery gives restaurants a calmer way to fill capacity while keeping the craft, hospitality, and customer relationship entirely their own.</p>
+          </div>
+          <div className="grid auto-rows-[15rem] gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <figure className="group relative overflow-hidden rounded-3xl lg:col-span-2"><img src={CHEF_PLATING_IMAGE} alt="Chef carefully plating dishes in a professional kitchen" loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" /><div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent" /><figcaption className="absolute bottom-5 left-5"><p className="text-lg font-bold">Protect the craft</p><p className="text-xs text-white/55">More guests without changing the dining experience.</p></figcaption></figure>
+            <figure className="group relative overflow-hidden rounded-3xl"><img src={MODERN_RESTAURANT_IMAGE} alt="Modern restaurant interior with warm ambient lighting" loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" /><div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent" /><figcaption className="absolute bottom-5 left-5"><p className="text-lg font-bold">Fill the right hours</p><p className="text-xs text-white/55">Targeted availability instead of blanket discounts.</p></figcaption></figure>
           </div>
         </div>
       </section>
@@ -954,6 +1048,49 @@ const RestaurantOnboarding = () => {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+      </>
+      )}
+
+      {/* Concise dashboard feature walkthrough */}
+      <section className="bg-[#fffdf9] px-6 py-16 lg:py-20">
+        <div className="mx-auto max-w-7xl">
+          <div className="restaurant-reveal grid gap-6 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
+            <div>
+              <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.18em] text-[#ff6b22]">
+                INSIDE THE DINERY DASHBOARD
+              </p>
+              <h2 className="text-4xl font-semibold leading-[1.03] tracking-[-0.055em] md:text-5xl">
+                Your restaurant tools,<br />
+                <span className="text-[#ff6b22]">clearly organized.</span>
+              </h2>
+            </div>
+            <p className="max-w-xl text-sm leading-7 text-black/50 lg:justify-self-end">
+              The dashboard brings daily operations, guest relationships, reservations, and restaurant settings into one consistent workspace.
+            </p>
+          </div>
+
+          <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {dashboardFeatures.map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <article
+                  key={feature.title}
+                  className="restaurant-reveal group flex gap-4 rounded-2xl border border-black/[0.07] bg-[#f6f1e9] p-5 transition-[opacity,transform,box-shadow] hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(16,25,35,0.08)]"
+                  style={{ transitionDelay: `${(index % 3) * 90}ms` }}
+                >
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#101923] text-[#ff6b22]">
+                    <Icon className="h-[18px] w-[18px]" />
+                  </span>
+                  <div>
+                    <h3 className="text-sm font-bold text-[#101923]">{feature.title}</h3>
+                    <p className="mt-1 text-xs leading-5 text-black/45">{feature.description}</p>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -1196,6 +1333,29 @@ const RestaurantOnboarding = () => {
           </div>
         </div>
       )}
+
+      <style>{`
+        .restaurant-reveal {
+          opacity: 0;
+          transform: translateY(28px);
+          transition-duration: 800ms;
+          transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .restaurant-reveal.is-visible {
+          opacity: 1;
+          transform: translateY(0);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .restaurant-reveal,
+          .restaurant-reveal.is-visible {
+            opacity: 1;
+            transform: none;
+            transition: none;
+          }
+        }
+      `}</style>
     </div>
   );
 };
